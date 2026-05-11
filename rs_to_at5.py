@@ -23,99 +23,182 @@ NULL_GUID = "773b8ea7-b54a-4a3c-99df-ffbbf6d29271"  # empty/null slot
 # ─────────────────────────────────────────────────────────────────────────────
 
 AMP_MAP = {
-    # ── Marshall ──────────────────────────────────────────────────────────────
-    "Amp_MarshallPlexi":         "d089ef66-b5c4-4274-910c-6a6ee194cf04",  # British Lead S100 (1959 Super Lead)
-    "Amp_MarshallJCM800":        "8fe96936-5178-4950-9b80-d89c32534bad",  # Brit 8000
-    "Amp_MarshallJCM900":        "cbf3c00f-dc31-4c7f-a409-f7fdbca005a8",  # Brit 9000
-    "Amp_MarshallJTM45":         "7788f707-4ef2-44cd-862a-a82ffdf7172b",  # JH Gold
-    "Amp_MarshallSilverJubilee": "3930eb8b-3eda-4079-b86d-7bfd7d4449bc",  # Brit Silver
-    "Amp_MarshallMajor":         "e1eed2cf-6777-46c4-ada2-65df0d7afc46",  # Red Pig
-    "Amp_MarshallJMP":           "1b5961b1-f862-4c8a-9a9b-a920da8c5cc2",  # Vintage Metal Lead
-    "Amp_MarshallSlash":         "2ea3ecfb-1b0c-417a-8788-86f5915f43c5",  # Brit 100 Mod 34/36 (AFD100)
-    "Amp_MarshallSlashGold":     "155f0121-a2ee-4e16-aaa0-44948f9be44f",  # Brit L.A. Gold (2555SL)
-    "Amp_MarshallJVM":           "57c43635-a976-46e0-a5c1-ef843bbba616",  # Satch VM (JVM410)
-    # ── Fender ────────────────────────────────────────────────────────────────
-    "Amp_FenderDeluxeReverb":    "89b3caab-dffb-4c29-85d9-2a60cb93c566",  # '65 Deluxe Reverb
-    "Amp_FenderTwinReverb":      "b3869f27-a9f1-4482-add4-9512c16917ea",  # '65 Twin Reverb
-    "Amp_FenderBassman":         "ca4587b9-3960-49de-9509-5a61e9b5cbae",  # American Vintage B
-    "Amp_FenderSupersonic":      "f4b89ab3-8ca6-44ee-b90b-a570040c8a3d",  # Super-Sonic
-    "Amp_FenderVibroking":       "dffa559d-7b12-464a-9fbf-877ca25f5cf3",  # Vibro-King
-    "Amp_FenderVibroverb":       "f0951b1e-91d2-4360-80d7-793fa785d2d6",  # '64 Vibroverb Custom
-    "Amp_FenderChamp":           "5f4f50a1-d5cb-43be-ad11-084e4ff21ea6",  # '57 Champ
-    "Amp_FenderChampion600":     "016a8c2a-489e-49da-81d7-5b72feb60f74",  # Champion 600
-    "Amp_FenderPrinceton":       "2a1f483c-a136-45b6-81ec-e92c60f8d009",  # '65 Princeton
-    "Amp_FenderProJunior":       "d0546d04-505c-42b1-8e9e-668a16adcfa8",  # Pro Junior
-    "Amp_FenderSuperReverb":     "d3c791b9-58f1-41d2-8a88-797e98cc5b29",  # '65 Super Reverb
-    "Amp_Fender57Deluxe":        "d4d5b530-0ce1-46cf-a47e-bf0224fa715e",  # '57 Deluxe
-    "Amp_Fender57Champ":         "5f4f50a1-d5cb-43be-ad11-084e4ff21ea6",  # '57 Champ
-    "Amp_Fender57CustomChamp":   "a0fa7c56-0772-4ddd-9320-c2ee254a3c4a",  # '57 Custom Champ
-    "Amp_Fender57CustomDeluxe":  "bf860ad9-cd8a-425b-8049-29211fce237a",  # '57 Custom Deluxe
-    "Amp_Fender57CustomTwin":    "4c9e667b-932a-42e3-a5d8-a9d9374c9959",  # '57 Custom Twin-Amp
-    "Amp_Fender57CustomPro":     "6c421302-9602-4ee8-b94a-672aa24cdde4",  # '57 Custom Pro-Amp
-    "Amp_Fender57Bandmaster":    "6f1c22b5-3593-4d86-a9a3-fae8c9504d77",  # '57 Bandmaster
-    "Amp_Fender59Bassman":       "3fcc8ad1-6d5e-416d-9c3d-7aae91c6f4d4",  # '59 Bassman LTD
-    "Amp_Fender53Bassman":       "f2190a68-52ea-408a-9c39-2ea8279c0d43",  # '53 Bassman
-    "Amp_FenderBassman300":      "9e6f407a-161d-433b-bddc-8565103fc9ce",  # Bassman 300
-    "Amp_FenderMH500":           "907be0ce-a419-4281-901f-dcd6763de54a",  # MH-500 Metalhead
-    # ── Mesa/Boogie ───────────────────────────────────────────────────────────
-    "Amp_MesaBoogieMarkIII":     "6ec4bf7a-dc59-4443-b2fb-1e645bf5192c",  # Mark III
-    "Amp_MesaBoogieMarkIV":      "1fbf7d6e-dad8-470f-b204-4d96b5466893",  # Mark IV
-    "Amp_MesaBoogieMarkV":       "d31154a9-8b5f-4abf-b079-d2e728d2c564",  # Mark V
-    "Amp_MesaBoogieMarkIIC":     "6e5c01fe-e1be-4e91-8657-74718ac8cb6e",  # Mark IIC+
-    "Amp_MesaDualRectifier":     "75ad4a0e-5c75-443d-8617-9681c4fe58d3",  # Dual Rectifier
-    "Amp_MesaTripleRectifier":   "c85e5dc4-d051-4aad-846f-038b0b5233c5",  # Triple Rectifier
-    "Amp_MesaTA30":              "1284c9cc-6efa-4720-a0da-106a2d2af1d8",  # TransAtlantic TA-30
-    "Amp_MesaTripleCrown":       "2ed4e896-6cf4-40ee-bc12-15f0c4d38b65",  # Triple Crown
-    "Amp_MesaCaliforniaTweed":   "d9aa41f9-4e51-4719-929c-251d07f2f276",  # California Tweed
-    "Amp_MesaModernTubeLead":    "bca11751-a7c1-49f5-846d-031f7eb780f0",  # Modern Tube Lead
-    "Amp_MesaCleanMKIII":        "a91067a3-fd80-40a8-be35-0681da5c4f47",  # American Clean MKIII
-    "Amp_MesaLeadMKIII":         "4af9d89a-c06b-4c8f-b137-af72bc58fded",  # American Lead MKIII
-    "Amp_MesaMetalLeadT":        "9400d18f-5f72-40ac-aa37-861ba3f18da5",  # Metal Lead T
+    # ── Rocksmith+ generic coded amp keys ─────────────────────────────────────
+    # Naming scheme: TW=Tweed(Fender), CA=California(Mesa), EN=English(Vox),
+    # BT=British Tube(Marshall), AT=American Tube(Roland), CS=Crystal/SS(Roland),
+    # HG=High Gain, GB=German/British
+
+    # TW = Tweed (Fender)
+    "Amp_TW22":  "bf860ad9-cd8a-425b-8049-29211fce237a",  # '57 Custom Deluxe  (22W tweed)
+    "Amp_TW26":  "6c421302-9602-4ee8-b94a-672aa24cdde4",  # '57 Custom Pro-Amp (26W tweed)
+    "Amp_TW40":  "3fcc8ad1-6d5e-416d-9c3d-7aae91c6f4d4",  # '59 Bassman LTD    (40W tweed)
+
+    # CA = California (Mesa/Boogie)
+    "Amp_CA38":  "a91067a3-fd80-40a8-be35-0681da5c4f47",  # American Clean MKIII (38W Mesa Mark III combo, clean ch)
+    "Amp_CA85":  "6ec4bf7a-dc59-4443-b2fb-1e645bf5192c",  # Mark III             (85W Mesa Mark III, crunch ch)
+    "Amp_CA100": "75ad4a0e-5c75-443d-8617-9681c4fe58d3",  # Dual Rectifier       (100W Mesa Dual Rectifier)
+
+    # EN = English (Vox)
+    "Amp_EN30":  "5d235e0d-9fd7-429e-b483-6f815281f3d7",  # British Copper 30TB  (Vox AC30)
+
+    # BT = British Tube (Marshall)
+    "Amp_BT30":  "cbf3c00f-dc31-4c7f-a409-f7fdbca005a8",  # Brit 9000            (Marshall JCM900, ~30W EL34 config)
+    "Amp_BT45":  "7788f707-4ef2-44cd-862a-a82ffdf7172b",  # JH Gold              (Marshall JTM45)
+
+    # AT = American Tube (Roland JC series)
+    "Amp_AT120": "ac08939a-32bf-496c-96ac-5d6c530abf14",  # Jazz Amp 120         (Roland JC-120)
+    "Amp_AT20":  "89b3caab-dffb-4c29-85d9-2a60cb93c566",  # '65 Deluxe Reverb    (American Tube 20W)
+
+    # CS = Crystal / Solid-state (Roland JC series)
+    "Amp_CS90":  "ac08939a-32bf-496c-96ac-5d6c530abf14",  # Jazz Amp 120         (Roland JC-90)
+    "Amp_CS100": "ac08939a-32bf-496c-96ac-5d6c530abf14",  # Jazz Amp 120         (Roland JC-100)
+    "Amp_CS120": "ac08939a-32bf-496c-96ac-5d6c530abf14",  # Jazz Amp 120         (Roland JC-120)
+
+    # HG = High Gain
+    "Amp_HG500": "c85e5dc4-d051-4aad-846f-038b0b5233c5",  # Triple Rectifier     (Mesa Triple Rectifier)
+
+    # ── Marshall branded keys ─────────────────────────────────────────────────
+    "Amp_MarshallPlexi":            "d089ef66-b5c4-4274-910c-6a6ee194cf04",  # British Lead S100
+    "Amp_MarshallJCM800":           "8fe96936-5178-4950-9b80-d89c32534bad",  # Brit 8000
+    "Amp_MarshallJCM900":           "cbf3c00f-dc31-4c7f-a409-f7fdbca005a8",  # Brit 9000
+    "Amp_MarshallJTM45":            "7788f707-4ef2-44cd-862a-a82ffdf7172b",  # JH Gold
+    "Amp_MarshallDSL100H":          "8fe96936-5178-4950-9b80-d89c32534bad",  # Brit 8000  (DSL100H closest to JCM800)
+    "Amp_MarshallDSL15H":           "8fe96936-5178-4950-9b80-d89c32534bad",  # Brit 8000
+    "Amp_MarshallJVM410H":          "57c43635-a976-46e0-a5c1-ef843bbba616",  # Satch VM
+    "Amp_MarshallJVM":              "57c43635-a976-46e0-a5c1-ef843bbba616",  # Satch VM
+    "Amp_MarshallSilverJubilee":    "3930eb8b-3eda-4079-b86d-7bfd7d4449bc",  # Brit Silver
+    "Amp_MarshallMajor":            "e1eed2cf-6777-46c4-ada2-65df0d7afc46",  # Red Pig
+    "Amp_MarshallJMP":              "1b5961b1-f862-4c8a-9a9b-a920da8c5cc2",  # Vintage Metal Lead
+    "Amp_MarshallSlash":            "2ea3ecfb-1b0c-417a-8788-86f5915f43c5",  # Brit 100 Mod 34/36
+    "Amp_MarshallSlashGold":        "155f0121-a2ee-4e16-aaa0-44948f9be44f",  # Brit L.A. Gold
+    "Amp_Marshall1962Bluesbreaker": "7788f707-4ef2-44cd-862a-a82ffdf7172b",  # JH Gold  (closest to Bluesbreaker)
+
+    # ── Orange branded keys (IBEX artist-authenticated) ───────────────────────
+    "IBEX_Amp_OrangeAD30_CH2":  "dd7b0e06-a17a-4851-83c4-ee32ca303b01",  # AD 30
+    "IBEX_Amp_OrangeRV50_CH1":  "e6151532-1028-422c-9a5d-fc57594ce8e8",  # RockerVerb 50
+
+    # ── Fender branded keys ───────────────────────────────────────────────────
+    "Amp_FenderDeluxeReverb":   "89b3caab-dffb-4c29-85d9-2a60cb93c566",  # '65 Deluxe Reverb
+    "Amp_FenderTwinReverb":     "b3869f27-a9f1-4482-add4-9512c16917ea",  # '65 Twin Reverb
+    "Amp_FenderBassman":        "ca4587b9-3960-49de-9509-5a61e9b5cbae",  # American Vintage B
+    "Amp_FenderSupersonic":     "f4b89ab3-8ca6-44ee-b90b-a570040c8a3d",  # Super-Sonic
+    "Amp_FenderVibroking":      "dffa559d-7b12-464a-9fbf-877ca25f5cf3",  # Vibro-King
+    "Amp_FenderVibroverb":      "f0951b1e-91d2-4360-80d7-793fa785d2d6",  # '64 Vibroverb Custom
+    "Amp_FenderChamp":          "5f4f50a1-d5cb-43be-ad11-084e4ff21ea6",  # '57 Champ
+    "Amp_FenderChampion600":    "016a8c2a-489e-49da-81d7-5b72feb60f74",  # Champion 600
+    "Amp_FenderPrinceton":      "2a1f483c-a136-45b6-81ec-e92c60f8d009",  # '65 Princeton
+    "Amp_FenderProJunior":      "d0546d04-505c-42b1-8e9e-668a16adcfa8",  # Pro Junior
+    "Amp_FenderSuperReverb":    "d3c791b9-58f1-41d2-8a88-797e98cc5b29",  # '65 Super Reverb
+    "Amp_Fender57CustomTwin":   "4c9e667b-932a-42e3-a5d8-a9d9374c9959",  # '57 Custom Twin-Amp
+    "Amp_Fender57CustomPro":    "6c421302-9602-4ee8-b94a-672aa24cdde4",  # '57 Custom Pro-Amp
+    "Amp_Fender59Bassman":      "3fcc8ad1-6d5e-416d-9c3d-7aae91c6f4d4",  # '59 Bassman LTD
+    "Amp_FenderBassman300":     "9e6f407a-161d-433b-bddc-8565103fc9ce",  # Bassman 300
+    "Amp_FenderMH500":          "907be0ce-a419-4281-901f-dcd6763de54a",  # MH-500 Metalhead
+
+    # ── Mesa/Boogie branded keys ──────────────────────────────────────────────
+    "Amp_MesaBoogieMarkIII":    "6ec4bf7a-dc59-4443-b2fb-1e645bf5192c",  # Mark III
+    "Amp_MesaBoogieMarkIV":     "1fbf7d6e-dad8-470f-b204-4d96b5466893",  # Mark IV
+    "Amp_MesaBoogieMarkV":      "d31154a9-8b5f-4abf-b079-d2e728d2c564",  # Mark V
+    "Amp_MesaBoogieMarkIIC":    "6e5c01fe-e1be-4e91-8657-74718ac8cb6e",  # Mark IIC+
+    "Amp_MesaDualRectifier":    "75ad4a0e-5c75-443d-8617-9681c4fe58d3",  # Dual Rectifier
+    "Amp_MesaTripleRectifier":  "c85e5dc4-d051-4aad-846f-038b0b5233c5",  # Triple Rectifier
+    "Amp_MesaTA30":             "1284c9cc-6efa-4720-a0da-106a2d2af1d8",  # TransAtlantic TA-30
+    "Amp_MesaTripleCrown":      "2ed4e896-6cf4-40ee-bc12-15f0c4d38b65",  # Triple Crown
+    "Amp_MesaCaliforniaTweed":  "d9aa41f9-4e51-4719-929c-251d07f2f276",  # California Tweed
+    "Amp_MesaModernTubeLead":   "bca11751-a7c1-49f5-846d-031f7eb780f0",  # Modern Tube Lead
+    "Amp_MesaCleanMKIII":       "a91067a3-fd80-40a8-be35-0681da5c4f47",  # American Clean MKIII
+    "Amp_MesaLeadMKIII":        "4af9d89a-c06b-4c8f-b137-af72bc58fded",  # American Lead MKIII
+
     # ── Vox ───────────────────────────────────────────────────────────────────
-    "Amp_VoxAC30":               "5d235e0d-9fd7-429e-b483-6f815281f3d7",  # British Copper 30TB
-    "Amp_VoxAC30Blue":           "533d3c6c-b3cd-455c-a3a1-642016f5cda9",  # British Blue Tube 30TB
+    "Amp_VoxAC30":     "5d235e0d-9fd7-429e-b483-6f815281f3d7",  # British Copper 30TB
+    "Amp_VoxAC30Blue": "533d3c6c-b3cd-455c-a3a1-642016f5cda9",  # British Blue Tube 30TB
+
     # ── Orange ────────────────────────────────────────────────────────────────
-    "Amp_OrangeOR120":           "6e8690b3-f6cf-4c36-b3c2-7f38fcc5706e",  # OR-120
-    "Amp_OrangeTinyTerror":      "99e446c7-49df-45b1-bff9-26d95e10c763",  # Tiny Terror
-    "Amp_OrangeRockerverb":      "e6151532-1028-422c-9a5d-fc57594ce8e8",  # RockerVerb 50
-    "Amp_OrangeAD30":            "dd7b0e06-a17a-4851-83c4-ee32ca303b01",  # AD 30
-    "Amp_OrangeThunderverb":     "e3260631-d81f-4c76-9e4f-d12be6ede5cb",  # Thunderverb 200
-    "Amp_OrangeAD200":           "dfb00647-6603-4fe1-a67a-5690a4dad0fb",  # AD 200
-    "Amp_OrangeDualTerror":      "3c25674f-a418-4fec-863c-f94495c746a0",  # Dual Terror
-    "Amp_OrangeOR50":            "827aedfb-cdc1-412e-8e47-5bac3c3c6d06",  # OR 50
+    "Amp_OrangeOR120":       "6e8690b3-f6cf-4c36-b3c2-7f38fcc5706e",  # OR-120
+    "Amp_OrangeTinyTerror":  "99e446c7-49df-45b1-bff9-26d95e10c763",  # Tiny Terror
+    "Amp_OrangeRockerverb":  "e6151532-1028-422c-9a5d-fc57594ce8e8",  # RockerVerb 50
+    "Amp_OrangeAD30":        "dd7b0e06-a17a-4851-83c4-ee32ca303b01",  # AD 30
+    "Amp_OrangeThunderverb": "e3260631-d81f-4c76-9e4f-d12be6ede5cb",  # Thunderverb 200
+    "Amp_OrangeAD200":       "dfb00647-6603-4fe1-a67a-5690a4dad0fb",  # AD 200
+    "Amp_OrangeDualTerror":  "3c25674f-a418-4fec-863c-f94495c746a0",  # Dual Terror
+    "Amp_OrangeOR50":        "827aedfb-cdc1-412e-8e47-5bac3c3c6d06",  # OR 50
+
     # ── ENGL ──────────────────────────────────────────────────────────────────
-    "Amp_EnglE650":              "c936fc9c-1594-48c8-b561-824827452a66",  # E650
-    "Amp_EnglPowerball":         "88d927a0-e399-4a1d-ac68-0699eee85f02",  # Powerball
+    "Amp_EnglE650":     "c936fc9c-1594-48c8-b561-824827452a66",  # E650
+    "Amp_EnglPowerball":"88d927a0-e399-4a1d-ac68-0699eee85f02",  # Powerball
+
     # ── Soldano ───────────────────────────────────────────────────────────────
-    "Amp_Soldano":               "4a22ac9f-aabb-4180-b697-5d5710a1acc2",  # SLD 100
-    # ── Peavey / 5150 ─────────────────────────────────────────────────────────
-    "Amp_Peavey5150":            "dcc7c825-76f4-4703-8e1f-b8a12b30b1de",  # Metal Lead V
-    "Amp_Peavey5150II":          "1e170e52-9ff7-40ff-995f-fab2cdef7cf5",  # SJ50
+    "Amp_Soldano": "4a22ac9f-aabb-4180-b697-5d5710a1acc2",  # SLD 100
+
+    # ── Peavey ────────────────────────────────────────────────────────────────
+    "Amp_Peavey5150":   "dcc7c825-76f4-4703-8e1f-b8a12b30b1de",  # Metal Lead V
+    "Amp_Peavey5150II": "1e170e52-9ff7-40ff-995f-fab2cdef7cf5",  # SJ50
+
     # ── Hiwatt ────────────────────────────────────────────────────────────────
-    "Amp_Hiwatt":                "26fbbf20-f88e-46de-a76f-5aabd2c8fd8d",  # HiAmp
+    "Amp_Hiwatt": "26fbbf20-f88e-46de-a76f-5aabd2c8fd8d",  # HiAmp
+
     # ── Roland ────────────────────────────────────────────────────────────────
-    "Amp_RolandJC120":           "ac08939a-32bf-496c-96ac-5d6c530abf14",  # Jazz Amp 120
-    # ── Dr. Z ─────────────────────────────────────────────────────────────────
-    "Amp_DrZMaz18":              "abdcae70-bff2-4b02-bf2f-d716dd8e8adf",  # MAZ 18 Jr
-    "Amp_DrZZWreck":             "cc59b472-2a2f-40b1-97f4-6ee4b7536c87",  # Z Wreck
+    "Amp_RolandJC120": "ac08939a-32bf-496c-96ac-5d6c530abf14",  # Jazz Amp 120
+
     # ── Misc branded ──────────────────────────────────────────────────────────
-    "Amp_CarvinV3M":             "5558e374-6d37-4674-a05e-2e005830d24e",  # V3M
-    "Amp_DiezelVH4":             "185e9cde-535b-42ab-abd1-4fbdb52d4808",  # VHandcraft 4
-    "Amp_BognerEcstasy":         "4b13e59f-32b7-4a69-abd0-28d0909cef89",  # German 34
-    "Amp_FriedmanPinkTaco":      "c81fb9d5-defb-4c65-ba59-205b9b9ea21e",  # MiniPlex 20
-    "Amp_PRSArchon":             "f24511a1-8ade-4f93-b781-ade541f0a921",  # SilverPlate 50
-    "Amp_THDBiValve":            "f058124b-498f-4899-8b29-35453d6aecff",  # Bi-Valve
-    "Amp_JetCityJCA20H":         "55078333-dcfd-41ac-9e87-cd6ea334507a",  # JCA20H
-    "Amp_JetCityJCA100H":        "913db945-c3a9-4e96-ad17-9c8d1053d913",  # JCA100H
-    "Amp_Sunn1200":              "300ed819-d21b-4589-b095-afd038e9f08c",  # JH 1200
-    "Amp_Randall":               "cfa6b70c-2c6c-4b83-b881-571a6343dfac",  # Darrell 100
-    "Amp_Supro":                 "bd903ed7-82bf-41cc-9834-685b6e3667b5",  # Tube Vintage Combo
+    "Amp_DrZMaz18":       "abdcae70-bff2-4b02-bf2f-d716dd8e8adf",  # MAZ 18 Jr
+    "Amp_DrZZWreck":      "cc59b472-2a2f-40b1-97f4-6ee4b7536c87",  # Z Wreck
+    "Amp_CarvinV3M":      "5558e374-6d37-4674-a05e-2e005830d24e",  # V3M
+    "Amp_DiezelVH4":      "185e9cde-535b-42ab-abd1-4fbdb52d4808",  # VHandcraft 4
+    "Amp_BognerEcstasy":  "4b13e59f-32b7-4a69-abd0-28d0909cef89",  # German 34
+    "Amp_PRSArchon":      "f24511a1-8ade-4f93-b781-ade541f0a921",  # SilverPlate 50
+    "Amp_THDBiValve":     "f058124b-498f-4899-8b29-35453d6aecff",  # Bi-Valve
+    "Amp_JetCityJCA20H":  "55078333-dcfd-41ac-9e87-cd6ea334507a",  # JCA20H
+    "Amp_JetCityJCA100H": "913db945-c3a9-4e96-ad17-9c8d1053d913",  # JCA100H
+    "Amp_Sunn1200":       "300ed819-d21b-4589-b095-afd038e9f08c",  # JH 1200
+    "Amp_Randall":        "cfa6b70c-2c6c-4b83-b881-571a6343dfac",  # Darrell 100
+    "Amp_Supro":          "bd903ed7-82bf-41cc-9834-685b6e3667b5",  # Tube Vintage Combo
+
+
+    # ── RS+ placeholder amp keys (brand-safe names for unlicensed amps) ──────
+    # EN50 = English 50W — Vox AC30 variant or Orange RockerVerb 50
+    # Muse used Orange and Vox; splitting by wattage: EN30=AC30, EN50=RockerVerb
+    "Amp_EN50":  "e6151532-1028-422c-9a5d-fc57594ce8e8",  # RockerVerb 50
+    # GB = German/British (Bogner/Diezel)
+    "Amp_GB38":  "4b13e59f-32b7-4a69-abd0-28d0909cef89",  # German 34 (Bogner Ecstasy)
+    "Amp_GB50":  "4b13e59f-32b7-4a69-abd0-28d0909cef89",  # German 34 (Bogner Ecstasy)
+    "Amp_GB100": "185e9cde-535b-42ab-abd1-4fbdb52d4808",  # VHandcraft 4 (Diezel VH4)
+    # BT = British Tube extras
+    "Amp_BT15":  "7788f707-4ef2-44cd-862a-a82ffdf7172b",  # JH Gold (Marshall JTM45 — closest small British)
+    # HG = High Gain
+    "Amp_HG100": "dcc7c825-76f4-4703-8e1f-b8a12b30b1de",  # Metal Lead V (Peavey 5150)
+    "Amp_HG180": "4a22ac9f-aabb-4180-b697-5d5710a1acc2",  # SLD 100 (Soldano SLO-100)
+
+    # ── DI / direct ───────────────────────────────────────────────────────────
+    "DI_Amp_TubePre":    "71a76a9f-cf70-4f59-971f-9864a055523c",  # American Tube Clean 1 (DI placeholder - amp muted)
+    "DI_Amp_BassDriver": "71a76a9f-cf70-4f59-971f-9864a055523c",  # Bass DI — same muted placeholder
+
     # ── Bass ──────────────────────────────────────────────────────────────────
-    "Amp_Ampeg":                 "52f28b23-80e3-4f43-9508-4447258b11c0",  # SVX-CL
-    "Amp_AmpegSVTVR":            "2aa0f50f-a6c9-4edd-97c2-df71a24087db",  # SVX-VR
-    "Amp_AmpegB15":              "ff274db4-43c3-4fb9-b44d-d04aefd13b28",  # SVX-15R
-    "Amp_Acoustic360":           "ecb60014-617c-4637-9435-28c1480a0e8f",  # 360Bass Preamp
-    "Amp_Aguilar":               "18f9d728-018e-4e22-9121-b7f411b2bb77",  # New York B750
+    # CH = Ampeg SVT (Classic/Heritage)
+    "Bass_Amp_CH300B": "52f28b23-80e3-4f43-9508-4447258b11c0",  # SVX-CL  (Ampeg SVT Classic 300W)
+    "Bass_Amp_CH350B": "52f28b23-80e3-4f43-9508-4447258b11c0",  # SVX-CL
+    "Bass_Amp_CH600B": "52f28b23-80e3-4f43-9508-4447258b11c0",  # SVX-CL
+    "Bass_Amp_BT600B": "52f28b23-80e3-4f43-9508-4447258b11c0",  # SVX-CL  (British Tube bass)
+    "Bass_Amp_BT880B": "52f28b23-80e3-4f43-9508-4447258b11c0",  # SVX-CL
+    "Bass_Amp_BT975B": "52f28b23-80e3-4f43-9508-4447258b11c0",  # SVX-CL
+    # HT = Ampeg SVT-VR (Heritage)
+    "Bass_Amp_HT100B": "ff274db4-43c3-4fb9-b44d-d04aefd13b28",  # SVX-15R (Ampeg B-15 Heritage)
+    "Bass_Amp_HT300B": "2aa0f50f-a6c9-4edd-97c2-df71a24087db",  # SVX-VR  (Ampeg SVT-VR 300W)
+    "Bass_Amp_HT400B": "2aa0f50f-a6c9-4edd-97c2-df71a24087db",  # SVX-VR
+    # LT = Fender Bassman (Light/Low wattage)
+    "Bass_Amp_LT25B":  "9e6f407a-161d-433b-bddc-8565103fc9ce",  # Bassman 300 (closest Fender bass amp)
+    "Bass_Amp_LT85B":  "9e6f407a-161d-433b-bddc-8565103fc9ce",  # Bassman 300
+    # CS = Crystal/Solid-state (Eden/Gallien-Krueger style)
+    "Bass_Amp_CS75B":  "18f9d728-018e-4e22-9121-b7f411b2bb77",  # New York B750
+    "Bass_Amp_CS240B": "18f9d728-018e-4e22-9121-b7f411b2bb77",  # New York B750
+    "Bass_Amp_CS300B": "18f9d728-018e-4e22-9121-b7f411b2bb77",  # New York B750
+    # Named bass amps
+    "Bass_Amp_EdenWT550": "18f9d728-018e-4e22-9121-b7f411b2bb77",  # New York B750 (Eden WT550)
+    "Amp_Ampeg":          "52f28b23-80e3-4f43-9508-4447258b11c0",  # SVX-CL
+    "Amp_AmpegSVTVR":     "2aa0f50f-a6c9-4edd-97c2-df71a24087db",  # SVX-VR
+    "Amp_AmpegB15":       "ff274db4-43c3-4fb9-b44d-d04aefd13b28",  # SVX-15R
+    "Amp_Acoustic360":    "ecb60014-617c-4637-9435-28c1480a0e8f",  # 360Bass Preamp
+    "Amp_Aguilar":        "18f9d728-018e-4e22-9121-b7f411b2bb77",  # New York B750
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -188,16 +271,165 @@ CAB_ENCLOSURE_MAP = {
     # Roland
     "Cab_RolandJC120":            "f7902634-12e9-4a2d-9f9a-bcd22781cdab",  # 2x12 JP Jazz
     # Ampeg
-    "Cab_AmpegSVT810E":           "b11418d6-9a01-42a9-a85b-cd287ac7a98e",  # SVX-810E
+    "Cab_AmpegSVT810E":           "fb54d283-dfc2-402e-8c76-87713387d770",  # SVX-810E
     "Cab_AmpegSVT810AV":          "b31f4357-3c42-4c89-8736-64f25bcbed9d",  # SVX-810 AV
-    "Cab_AmpegB15":               "291a5adb-cc71-4eda-be0d-5a0af6bea973",  # SVX-15R
-    "Cab_AmpegBA500":             "63387c79-e174-4d78-9d5e-86fdaa8bc45e",  # SVX-500
+    "Cab_AmpegB15":               "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",  # SVX-15R
+    "Cab_AmpegBA500":             "fb54d283-dfc2-402e-8c76-87713387d770",  # SVX-500
+    # ── RS+ generic coded cab keys ────────────────────────────────────────────
+    "Cab_AT0112C_Condenser_Edge":       "bcec521d-c918-4af6-98be-b50b644ac3dd",
+    "Cab_AT0112C_57_Edge":              "bcec521d-c918-4af6-98be-b50b644ac3dd",
+    "Cab_AT0112C_Ribbon_Cone":          "bcec521d-c918-4af6-98be-b50b644ac3dd",
+    "Cab_AT0112C_Ribbon_Edge":          "bcec521d-c918-4af6-98be-b50b644ac3dd",
+    "Cab_AT1121C_57_Cone":              "bcec521d-c918-4af6-98be-b50b644ac3dd",
+    "Cab_AT1121C_57_Edge":              "bcec521d-c918-4af6-98be-b50b644ac3dd",
+    "Cab_TW112C_57_Edge":               "70b17311-7b73-4415-968e-c26543e22e18",
+    "Cab_TW112C_57_Cone":               "70b17311-7b73-4415-968e-c26543e22e18",
+    "Cab_TW112C_Ribbon_Cone":           "70b17311-7b73-4415-968e-c26543e22e18",
+    "Cab_TW112C_Ribbon_Edge":           "70b17311-7b73-4415-968e-c26543e22e18",
+    "Cab_TW112C_Condenser_Cone":        "70b17311-7b73-4415-968e-c26543e22e18",
+    "Cab_TW112C_Condenser_OffAxis":     "70b17311-7b73-4415-968e-c26543e22e18",
+    "Cab_TW110C_57_Edge":               "f7f9e974-28f8-4303-b177-39e620c60e9e",
+    "Cab_TW110C_57_Cone":               "f7f9e974-28f8-4303-b177-39e620c60e9e",
+    "Cab_TW110C_Ribbon_Cone":           "f7f9e974-28f8-4303-b177-39e620c60e9e",
+    "Cab_TW110C_Ribbon_Edge":           "f7f9e974-28f8-4303-b177-39e620c60e9e",
+    "Cab_TW110C_Condenser_Cone":        "f7f9e974-28f8-4303-b177-39e620c60e9e",
+    "Cab_TW410C_Ribbon_Cone":           "4614704e-7ca2-4736-a750-648fe9033650",
+    "Cab_TW410C_Ribbon_Edge":           "4614704e-7ca2-4736-a750-648fe9033650",
+    "Cab_TW410C_Condenser_Edge":        "4614704e-7ca2-4736-a750-648fe9033650",
+    "Cab_TW410C_Condenser_Cone":        "4614704e-7ca2-4736-a750-648fe9033650",
+    "Cab_TW410C_57_Edge":               "4614704e-7ca2-4736-a750-648fe9033650",
+    "Cab_TW410C_57_OffAxis":            "4614704e-7ca2-4736-a750-648fe9033650",
+    "Cab_CA112C_57_Edge":               "82409e48-b67c-4762-8256-963f43240ccc",
+    "Cab_CA112C_57_Cone":               "82409e48-b67c-4762-8256-963f43240ccc",
+    "Cab_CA112C_Condenser_Cone":        "82409e48-b67c-4762-8256-963f43240ccc",
+    "Cab_CA112C_Ribbon_Edge":           "82409e48-b67c-4762-8256-963f43240ccc",
+    "Cab_CA112C_Ribbon_OffAxis":        "82409e48-b67c-4762-8256-963f43240ccc",
+    "Cab_CA412C_57_Edge":               "849b3340-9e28-411f-9faf-e99b7b2bfb36",
+    "Cab_CA412C_57_Cone":               "849b3340-9e28-411f-9faf-e99b7b2bfb36",
+    "Cab_CA412C_Ribbon_Cone":           "849b3340-9e28-411f-9faf-e99b7b2bfb36",
+    "Cab_CA412C_Condenser_Edge":        "849b3340-9e28-411f-9faf-e99b7b2bfb36",
+    "Cab_CA215C_57_Edge":               "fcb2aa61-ccd5-4e6b-bbfc-45339c1c4352",
+    "Cab_CA215C_57_Cone":               "fcb2aa61-ccd5-4e6b-bbfc-45339c1c4352",
+    "Cab_CA215C_Condenser_Edge":        "fcb2aa61-ccd5-4e6b-bbfc-45339c1c4352",
+    "Cab_EN212C_57_Cone":               "85d85251-4cb2-4ade-b04c-9c6e150e41d7",
+    "Cab_EN212C_57_Edge":               "85d85251-4cb2-4ade-b04c-9c6e150e41d7",
+    "Cab_EN212C_Condenser_Cone":        "85d85251-4cb2-4ade-b04c-9c6e150e41d7",
+    "Cab_EN212C_Ribbon_Edge":           "85d85251-4cb2-4ade-b04c-9c6e150e41d7",
+    "Cab_EN212C_Ribbon_Cone":           "85d85251-4cb2-4ade-b04c-9c6e150e41d7",
+    "Cab_EN4120C_57_Cone":              "85d85251-4cb2-4ade-b04c-9c6e150e41d7",
+    "Cab_EN4120C_57_Edge":              "85d85251-4cb2-4ade-b04c-9c6e150e41d7",
+    "Cab_BT1120C_57_Cone":              "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_BT1120C_57_Edge":              "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_BT1121C_57_Edge":              "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_BT410C_Ribbon_Cone":           "4614704e-7ca2-4736-a750-648fe9033650",
+    "Cab_CS212C_Ribbon_Edge":           "f7902634-12e9-4a2d-9f9a-bcd22781cdab",
+    "Cab_CS212C_57_Edge":               "f7902634-12e9-4a2d-9f9a-bcd22781cdab",
+    "Cab_CS212C_Condenser_Edge":        "f7902634-12e9-4a2d-9f9a-bcd22781cdab",
+    "Cab_CS1120C_Ribbon_Edge":          "f7902634-12e9-4a2d-9f9a-bcd22781cdab",
+    "Cab_CS1515C_57_Edge":              "f7902634-12e9-4a2d-9f9a-bcd22781cdab",
+    "Cab_GB412CMKI_57_Edge":            "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_GB412CMKI_57_Cone":            "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_GB412CMKII_57_Edge":           "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_GB412CMKII_57_Cone":           "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_GB412CMKII_Ribbon_Cone":       "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_GB412CMKII_Condenser_Cone":    "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_GB412CMKIII_57_Edge":          "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_GB412CMKIII_57_Cone":          "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_GB412CMKIII_Ribbon_Cone":      "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_GB412CMKIII_Condenser_Edge":   "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_GB412CMKIII_Condenser_Cone":   "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_HG2120C_Ribbon_Cone":          "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_HG2120C_57_Cone":              "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_HG2120C_Condenser_Cone":       "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_HG212C_Ribbon_Cone":           "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_HG215C_57_Cone":               "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_PA600C":                       "bcec521d-c918-4af6-98be-b50b644ac3dd",
+    "Cab_PA999C":                       "bcec521d-c918-4af6-98be-b50b644ac3dd",
+    "Bass_Cab_BT212BC_Tube_Cone":       "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_BT212BC_Tube_Edge":       "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_BT212BC_57_Edge":         "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_BT212BC_57_Cone":         "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_BT212BC_Condenser_Cone":  "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_BT410BC_Tube_OffAxis":    "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_BT410BC_57_OffAxis":      "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_BT410BC_57_Cone":         "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_BT410BC_Condenser_Cone":  "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_AT1150BC_Tube_Cone":      "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Bass_Cab_AT1150BC_Tube_Edge":      "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Bass_Cab_AT1150BC_57_Edge":        "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Bass_Cab_AT1150BC_Tube_OffAxis":   "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Bass_Cab_AT810BC_57_Cone":         "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_AT810BC_57_Edge":         "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_AT810BC_Condenser_Cone":  "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_AT810BC_Condenser_Edge":  "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_AT810BC_Tube_Cone":       "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_CH210BC_Tube_Cone":       "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_CH210BC_Condenser_Cone":  "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_CH310BC_57_Cone":         "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_CH410BC_57_Cone":         "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_CH410BC_57_Edge":         "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_CA1510BC_57_Cone":        "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Bass_Cab_CA1510BC_57_Edge":        "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Bass_Cab_CA1510BC_Tube_Edge":      "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Bass_Cab_CA1510BC_Tube_Cone":      "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Bass_Cab_CA1510BC_Condenser_Edge": "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Bass_Cab_CS410BC_Tube_Cone":       "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_CS410BC_Tube_Edge":       "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_CS410BC_57_Edge":         "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_CS410BC_57_Cone":         "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_CS410BC_Condenser_Edge":  "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_CS15BC_57_Edge":          "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Bass_Cab_OrangeOBC810_57_Cone":    "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_EdenD212XLT_57_Cone":     "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_EdenD610XST_Tube_Edge":   "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_EdenD610XST_Tube_Cone":   "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Bass_Cab_TW215BC_57_Cone":         "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Bass_Cab_TW215BC_57_Edge":         "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Bass_Cab_TW215BC_Tube_Edge":       "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "IBEX_Cab_OrangeRV50_212_RSC67_OffAxis_Cap":   "16b2e136-c230-4598-9931-5b913efb76e6",
+    "IBEX_Cab_OrangePrPro412_RSD20_OffAxis_Cone":  "4edd00f5-1dc0-4130-a3bb-7eb608e834ab",
+    "IBEX_Cab_MesaBoogie1x12Widebody_57_Edge":     "8c6c0893-9f50-492c-ac1d-4773fd697638",
+    # ── Additional RS2014 cab variants (mic/position variants of existing enclosures) ──
+    "Cab_TW112C_Condenser_Edge":        "70b17311-7b73-4415-968e-c26543e22e18",  # 1x12 '57 Deluxe
+    "Cab_TW410C_Condenser_OffAxis":     "4614704e-7ca2-4736-a750-648fe9033650",  # 4x10 '59 Bassman
+    "Cab_HG215C_Ribbon_Cone":           "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",  # 4x12 Brit 8000
+    "Cab_Marshall1960AX_57_Cone":       "c97bc69c-c02d-4cce-b19d-859b72833550",  # 4x12 1960AV
+    "Cab_GB412CMKIII_57_OffAxis":       "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",  # 4x12 Brit 8000
+    "Cab_GB412CMKIII_Ribbon_Edge":      "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",  # 4x12 Brit 8000
+    "Cab_GB412CMKI_Condenser_OffAxis":  "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",  # 4x12 Brit 8000
+    "Cab_GB412CMKI_Condenser_Cone":     "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",  # 4x12 Brit 8000
+    "Cab_BT1120C_Ribbon_Edge":          "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",  # 4x12 Brit 8000
+    "Cab_CA112C_Ribbon_Cone":           "82409e48-b67c-4762-8256-963f43240ccc",  # 1x12 Mark III
+    "Cab_CS1120C_Ribbon_Cone":          "f7902634-12e9-4a2d-9f9a-bcd22781cdab",  # 2x12 JP Jazz
+    "Cab_CS1515C_Ribbon_Cone":          "f7902634-12e9-4a2d-9f9a-bcd22781cdab",  # 2x12 JP Jazz
+    "Cab_EN4120C_57_OffAxis":           "85d85251-4cb2-4ade-b04c-9c6e150e41d7",  # 2x12 BM 30 H70
+    "Cab_EN4120C_Condenser_Edge":       "85d85251-4cb2-4ade-b04c-9c6e150e41d7",  # 2x12 BM 30 H70
+    "Bass_Cab_AT810BC_Tube_Edge":       "fb54d283-dfc2-402e-8c76-87713387d770",  # SVX-810E
+    "Bass_Cab_AT1150BC_Condenser_Edge": "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",  # 4x12 Brit 8000
+    "Bass_Cab_BT410BC_57_Edge":         "fb54d283-dfc2-402e-8c76-87713387d770",  # SVX-810E
+    "Bass_Cab_BT115BC_Tube_Cone":       "0c2f1129-e09d-4510-9624-7c8b05f188cf",  # 1x15 OBC 115
+    "Bass_Cab_GB415BC_Tube_Cone":       "fb54d283-dfc2-402e-8c76-87713387d770",  # SVX-810E
+    "Bass_Cab_CH410BC_Condenser_Cone":  "fb54d283-dfc2-402e-8c76-87713387d770",  # SVX-810E
+
+    "Bass_Cab_BT410BC_Tube_Cone":   "fb54d283-dfc2-402e-8c76-87713387d770",  # 8x10 OBC 810
+    "Bass_Cab_BT410BC_Tube_Edge":   "fb54d283-dfc2-402e-8c76-87713387d770",
+    "Cab_OrangePPC412_57_Cone":     "4edd00f5-1dc0-4130-a3bb-7eb608e834ab",  # 4x12 PPC 412
+    "Cab_OrangePPC412_57_Edge":     "4edd00f5-1dc0-4130-a3bb-7eb608e834ab",
+    "Cab_OrangePPC412_Ribbon_Cone": "4edd00f5-1dc0-4130-a3bb-7eb608e834ab",
+    # ── Marshall lowercase variants (RS+ uses lowercase 'a' suffix) ───────────
+    "Cab_Marshall1960a_57_Edge":        "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",  # 4x12 Brit 8000
+    "Cab_Marshall1960a_57_Cone":        "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_Marshall1960a_57_OffAxis":     "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_Marshall1960a_Condenser_Cone": "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_Marshall1960a_Ribbon_Edge":    "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "Cab_Marshall1960AX_57_Edge":       "c97bc69c-c02d-4cce-b19d-859b72833550",  # 4x12 1960AV
+    "Cab_Marshall1960AX_Ribbon_Cone":   "c97bc69c-c02d-4cce-b19d-859b72833550",
 }
 
 # Default cab when RS key is unknown
 DEFAULT_CAB_4x12  = "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b"  # 4x12 Brit 8000
 DEFAULT_CAB_2x12  = "85d85251-4cb2-4ade-b04c-9c6e150e41d7"  # 2x12 BM 30 H70
-DEFAULT_CAB_1x12  = "bcec521d-c918-4af6-98be-b50b644ac3dd"  # 1x12 Open Vintage
+DEFAULT_CAB_1x12  = "7efbb008-6942-4538-875b-d65fc7321617"  # 1x12 '57 Custom Deluxe (confirmed owned)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SPEAKER (DRIVER) MAPPING  (Rocksmith Cab Key -> AT5 SpeakerModel GUID)
@@ -246,6 +478,38 @@ SPEAKER_MAP = {
     "Cab_Hiwatt":                 "d052f84c-a5fd-4a69-9d4b-d4fa68c155f2",  # HiAmp (Fane)
     # Roland
     "Cab_RolandJC120":            "f755dce5-b300-4aae-8b07-adac9da35705",  # Jazz 12 (Roland)
+    # ── RS+ generic coded cab keys -> speaker drivers ─────────────────────────
+    "Cab_AT0112C_Condenser_Edge":   "a3cc18b8-e9b4-49e3-b1ce-34c69b310b83",  # American 12C (Jensen)
+    "Cab_AT0112C_57_Edge":          "a3cc18b8-e9b4-49e3-b1ce-34c69b310b83",
+    "Cab_AT0112C_Ribbon_Cone":      "a3cc18b8-e9b4-49e3-b1ce-34c69b310b83",
+    "Cab_AT0112C_Ribbon_Edge":      "a3cc18b8-e9b4-49e3-b1ce-34c69b310b83",
+    "Cab_TW112C_57_Edge":           "a3cc18b8-e9b4-49e3-b1ce-34c69b310b83",  # American 12C (Jensen)
+    "Cab_TW112C_57_Cone":           "a3cc18b8-e9b4-49e3-b1ce-34c69b310b83",
+    "Cab_TW110C_57_Edge":           "a3cc18b8-e9b4-49e3-b1ce-34c69b310b83",
+    "Cab_TW410C_Ribbon_Cone":       "a3cc18b8-e9b4-49e3-b1ce-34c69b310b83",
+    "Cab_CA112C_57_Edge":           "2dc1a3c4-6a20-4deb-a9cd-5e939ae1e1fa",  # Brit V2 (V30 Mesa)
+    "Cab_CA412C_57_Edge":           "2dc1a3c4-6a20-4deb-a9cd-5e939ae1e1fa",
+    "Cab_CA412C_57_Cone":           "2dc1a3c4-6a20-4deb-a9cd-5e939ae1e1fa",
+    "Cab_EN212C_57_Cone":           "aa7f635a-7c28-4116-a622-9675340f9fd8",  # Brit Alnico B (Blue)
+    "Cab_EN212C_57_Edge":           "aa7f635a-7c28-4116-a622-9675340f9fd8",
+    "Cab_BT1120C_57_Cone":          "e372dd04-b11d-4958-8c29-0fbe341e97ca",  # Brit 75 (G12T-75)
+    "Cab_CS212C_Ribbon_Edge":       "f755dce5-b300-4aae-8b07-adac9da35705",  # Jazz 12 (Roland)
+    "Cab_GB412CMKIII_57_Edge":      "9422a3d9-5e6b-4c63-bc6d-b15fcbd99f09",  # Brit Vintage 16B (V30)
+    "Cab_HG2120C_Ribbon_Cone":      "9422a3d9-5e6b-4c63-bc6d-b15fcbd99f09",
+    "Cab_PA600C":                   "a3cc18b8-e9b4-49e3-b1ce-34c69b310b83",  # American 12C (generic)
+    "Bass_Cab_BT212BC_Tube_Cone":   "9422a3d9-5e6b-4c63-bc6d-b15fcbd99f09",  # Brit Vintage 16B
+    "Bass_Cab_AT1150BC_Tube_Cone":  "a3cc18b8-e9b4-49e3-b1ce-34c69b310b83",  # American 12C
+    "Bass_Cab_AT810BC_57_Cone":     "9422a3d9-5e6b-4c63-bc6d-b15fcbd99f09",
+    "Bass_Cab_CH210BC_Tube_Cone":   "9422a3d9-5e6b-4c63-bc6d-b15fcbd99f09",
+    "Bass_Cab_CA1510BC_57_Cone":    "2dc1a3c4-6a20-4deb-a9cd-5e939ae1e1fa",  # Brit V2 (V30)
+    "Bass_Cab_CS410BC_Tube_Cone":   "f755dce5-b300-4aae-8b07-adac9da35705",  # Jazz 12 (Roland/Eden)
+    "Bass_Cab_OrangeOBC810_57_Cone":"9422a3d9-5e6b-4c63-bc6d-b15fcbd99f09",
+    "IBEX_Cab_OrangeRV50_212_RSC67_OffAxis_Cap":  "9422a3d9-5e6b-4c63-bc6d-b15fcbd99f09",
+    "IBEX_Cab_OrangePrPro412_RSD20_OffAxis_Cone": "9422a3d9-5e6b-4c63-bc6d-b15fcbd99f09",
+    "IBEX_Cab_MesaBoogie1x12Widebody_57_Edge":    "2dc1a3c4-6a20-4deb-a9cd-5e939ae1e1fa",
+    "Bass_Cab_BT410BC_Tube_Cone":   "9422a3d9-5e6b-4c63-bc6d-b15fcbd99f09",
+    "Cab_OrangePPC412_57_Cone":     "9422a3d9-5e6b-4c63-bc6d-b15fcbd99f09",
+    "Cab_OrangePPC412_57_Edge":     "9422a3d9-5e6b-4c63-bc6d-b15fcbd99f09",
 }
 
 DEFAULT_SPEAKER_A = "674b563d-948e-4f33-98d1-8f8904096315"  # Brit Anniversary 1 (Celestion G12H)
@@ -459,6 +723,272 @@ EFFECT_MAP = {
     "Digital Flanger":  "c11388bb-6326-4766-a440-ea9fa3f82425",
     "Swell (rack)":     "1e27e673-20fe-474e-a438-d85a9bc566b4",
     "Step Filter (rack)":"fb5d2469-05f6-4a44-9576-41ae232c9385",
+    # ── RS+ generic coded pedal keys ─────────────────────────────────────────
+    "Pedal_SpringReverb":       "ad9d0a70-7a59-4fef-ace5-c592764e3749",  # '63 Reverb (Fender spring)
+    "Pedal_EQ5":                "8d7ff76e-9273-46b6-95d5-3d7bd667fff2",  # 7 Band Graphic EQ
+    "Pedal_EQ8":                "babadeaf-9c28-4641-8fa9-d7366a3238a2",  # 10 Band Graphic
+    "Pedal_AcousticEmulator":   "71fe6e6d-5879-42a7-9a31-6093ecee2a1c",  # Acoustic Sim
+    "Pedal_LoFiFilter":         "95c36693-f913-4fc5-b60f-6b1732103cee",  # Tape Cassette
+    "Pedal_GermaniumDrive":     "6c3ff0bf-b840-47f3-83d3-66816763097f",  # Fuzz Age (Germanium Fuzz Face)
+    "Pedal_CustomDrive":        "fd627f5e-ba11-4082-b546-a4f0b05985ff",  # Overdrive (Boss SD-1)
+    "Pedal_Chorus20":           "2a9ef349-fb29-4e66-99a9-cc66d10192cc",  # Chorus-1 (Roland CE-1)
+    "Pedal_RangeBooster":       "382fd7fe-b60f-440b-aed8-3dae6e9e94c6",  # Treble Booster
+    "Pedal_AmpTrem":            "50378f09-a919-4dee-9bbe-c242403a52a2",  # Opto Tremolo
+    "Pedal_OctaveUp":           "aa74a915-a1fe-4f54-a8a8-5297c3e09b56",  # Octa-V (Roger Mayer Octavia)
+    "Pedal_Tremolo":            "187eb9ab-7ae6-4797-954b-079de09e26bb",  # Tremolo
+    "Pedal_ModernWah":          "6482748e-9382-4ad6-b284-5c29ee50f2d7",  # Wah (Cry Baby)
+    "Pedal_OmniMod":            "6db46983-d9ff-4ebf-a1eb-d59789bdd501",  # X-VIBE
+    "Pedal_Octavius":           "994770ae-ebb4-4ca8-884e-374f88fa3db0",  # Octav (Boss OC-2)
+    "Pedal_LineDrive":          "77f0f320-cc4e-44be-9ffe-2f0b679434ae",  # Booster
+    "Pedal_MetalDistortion":    "1910832b-2b47-46ff-b14c-46ec168e50e6",  # Metal Distortion (Boss MT-2)
+    "Pedal_MultiPitch":         "9b8e89e2-2959-41b2-90eb-dc5de12964d0",  # Wharmonator (Whammy)
+    "Pedal_UKWah":              "02cd5797-10d8-4ffa-b4f4-438b93028941",  # Wah 47 (Vox V847)
+    "Pedal_Chorus":             "bc6a9f33-ac11-41f8-973d-0327d4f3e018",  # Chorus
+    "Pedal_CaptFuzzle":         "58dbec22-58e0-464c-8c04-91fb9d9973e2",  # BigPig (Big Muff)
+    "Pedal_ValveEcho":          "8bbfc5b9-bf29-4a55-8211-ca21dcfda8bf",  # Tape Echo
+    "Pedal_ModDelay":           "063668e9-2af7-4a21-a554-abb1ff51a913",  # X-TIME (mod delay)
+    "Pedal_Phaser":             "a4ed5e25-707d-40ef-9846-64eeb820aeea",  # Phaze Nine (Phase 90)
+    "Pedal_NoFiEcho":           "95c36693-f913-4fc5-b60f-6b1732103cee",  # Tape Cassette (lo-fi)
+    "Pedal_ShaverPhaser":       "0ef53d8f-2dd5-4acd-95f8-e8652ae31240",  # Small Phazer (EHX Small Stone)
+    "Pedal_Compression":        "5478981b-b18a-469f-81e7-a3e228cc9d50",  # Compressor
+    "Pedal_USWah":              "6482748e-9382-4ad6-b284-5c29ee50f2d7",  # Wah (Cry Baby)
+    "Pedal_CosmicEcho":         "48e7b721-d57a-4c34-813b-95d8091d5eda",  # EchoMan (Memory Man)
+    "Pedal_OilCanEcho":         "8bbfc5b9-bf29-4a55-8211-ca21dcfda8bf",  # Tape Echo
+    "Pedal_AnalogueDelay":      "b756e0c1-7685-4b38-bccc-b74c7febd868",  # Analog Delay
+    "Pedal_VintageFlanger":     "8a878202-9126-4d20-8e73-374e178312f4",  # Electric Flanger (EHX Mistress)
+    "Pedal_BobFilter":          "77a321dd-69e1-4474-be07-d8a97e78bd1f",  # Envelope Filter
+    "Pedal_PlateVerb":          "5726816c-1af2-41f2-8427-7e045f85c95b",  # Plate Reverb
+    "Pedal_BakedRotatoe":       "a6d48956-a0e5-4d63-9c22-b5b38604d2a5",  # Uni-V (Univibe)
+    "Pedal_TubeSpring":         "ad9d0a70-7a59-4fef-ace5-c592764e3749",  # '63 Reverb (spring)
+    "Pedal_FuzzWasHe":          "09ac5b94-f238-4e4c-914e-ba7662f280d9",  # Fuzz Age 2 (Si Fuzz Face)
+    "Pedal_ShredZone":          "510f6d25-6ec4-417b-bf58-0f8028209cce",  # Distortion (Boss DS-1)
+    "Pedal_Swole":              "5478981b-b18a-469f-81e7-a3e228cc9d50",  # Compressor
+    "Pedal_ModernFlanger":      "7ccf016f-e540-4e46-a124-8f19ce5ab2b1",  # Flanger
+    "Pedal_BuzzToo":            "58dbec22-58e0-464c-8c04-91fb9d9973e2",  # BigPig (Big Muff)
+    "Pedal_AutoFilter":         "77a321dd-69e1-4474-be07-d8a97e78bd1f",  # Envelope Filter
+    "Pedal_BitCruncher":        "95c36693-f913-4fc5-b60f-6b1732103cee",  # Tape Cassette
+    "Pedal_NoiseGate":          "0455f997-43ca-4c9b-9269-286a19d10d48",  # Noise Gate
+    "Pedal_ClassicFlanger":     "ae6177c2-27c2-4463-a06a-357408bb2082",  # Analog Flanger (Boss BF-2)
+    "Pedal_NPNDelay":           "e11b1dc5-1f7d-42ad-af30-0539b3646b3c",  # Delay
+    "Pedal_BuzzOne":            "0679dea3-2588-4d9d-8d0d-ef3762f1f478",  # FuzzOne (Maestro FuzzTone)
+    "Pedal_MultiTrem":          "187eb9ab-7ae6-4797-954b-079de09e26bb",  # Tremolo
+    "Pedal_AmpVibe":            "a6d48956-a0e5-4d63-9c22-b5b38604d2a5",  # Uni-V (Univibe)
+    "Pedal_80sFlanger":         "4e4d82f9-224a-4ffb-9994-97ef8285c315",  # Metal Flanger (MXR 117)
+    "Pedal_DigitalVerb":        "59ab0817-b168-4bdc-b837-e3cba1efb2dd",  # Digital Reverb
+    "Pedal_Limiter":            "5478981b-b18a-469f-81e7-a3e228cc9d50",  # Compressor (closest to limiter)
+    "Pedal_Distortion":         "510f6d25-6ec4-417b-bf58-0f8028209cce",  # Distortion (Boss DS-1)
+    # Bass pedals
+    "Bass_Pedal_MBComp":        "d0211742-18e6-4fdb-9efa-3d72e4ae515b",  # Tube Compressor
+    "Bass_Pedal_BassEQ8":       "babadeaf-9c28-4641-8fa9-d7366a3238a2",  # 10 Band Graphic
+    "Bass_Pedal_BassChorus":    "ed2c3a06-d304-496b-b031-7725a3d27eea",  # Analog Chorus (Ampeg)
+    "Bass_Pedal_BassFuzz":      "58dbec22-58e0-464c-8c04-91fb9d9973e2",  # BigPig (Big Muff)
+    "Bass_Pedal_BassOverdrive": "1d665fde-1a62-42a1-be6d-bad9bbe5df3d",  # SVX-OD
+    "Bass_Pedal_BassSubOctave": "9afc331b-c0c3-4592-b03f-c97f8d911e34",  # SVX-OCT
+    "Bass_Pedal_BassDistortion":"510f6d25-6ec4-417b-bf58-0f8028209cce",  # Distortion
+    "Bass_Pedal_EdenWTDI":      "d36a32bf-200c-4906-93b9-0aa91cd1f579",  # AmpLess (Sansamp)
+    "Bass_Pedal_BassAutoFilter":"15b140e0-3e02-4adc-a9c4-c652960e60f9",  # SVX Envelope Filter
+    "Bass_Pedal_BassFlanger":   "7ccf016f-e540-4e46-a124-8f19ce5ab2b1",  # Flanger
+    "Bass_Pedal_BassEnbig":     "9b8e89e2-2959-41b2-90eb-dc5de12964d0",  # Wharmonator (Whammy)
+    # Additional rack effects
+    "Rack_StudioVerb":          "59ab0817-b168-4bdc-b837-e3cba1efb2dd",  # Digital Reverb
+    "Rack_StudioPlate":         "5726816c-1af2-41f2-8427-7e045f85c95b",  # Plate Reverb
+    "Rack_StudioCompressor":    "d0211742-18e6-4fdb-9efa-3d72e4ae515b",  # Tube Compressor
+    "Rack_StudioGraphicEQ":     "8d7ff76e-9273-46b6-95d5-3d7bd667fff2",  # 7 Band Graphic EQ
+    "Rack_SynthFilter":         "a7e2c155-6af8-40d5-8914-8446c46790b2",  # Filter Formant
+    "Rack_TapeEcho":            "8bbfc5b9-bf29-4a55-8211-ca21dcfda8bf",  # Tape Echo
+    "Rack_StereoPhaser":        "96ee1a4f-4090-4870-bd1a-1c3d908c3e63",  # Filter Phaser
+    # IBEX branded effects
+    "Ibex_Pedal_EHXRamsHeadBigMuffPi": "58dbec22-58e0-464c-8c04-91fb9d9973e2",  # BigPig
+    "Ibex_Pedal_EHXSmallClone": "1edbb450-d048-11dc-95ff-0800200c9a66",  # Digital Chorus
+    "IBEX_Pedal_OrangeSustain": "77f0f320-cc4e-44be-9ffe-2f0b679434ae",  # Booster
+    "IBEX_Pedal_OrangeDistortion": "510f6d25-6ec4-417b-bf58-0f8028209cce",  # Distortion
+    "IBEX_Pedal_OrangePhaser":  "a4ed5e25-707d-40ef-9846-64eeb820aeea",  # Phaze Nine
+    "IBEX_Rack_ModVerb":        "59ab0817-b168-4bdc-b837-e3cba1efb2dd",  # Digital Reverb
+    "IBEX_Rack_RolandDimensionD": "1edbb450-d048-11dc-95ff-0800200c9a66",  # Digital Chorus
+    "IBEX_Pedal_DaFuzz":        "58dbec22-58e0-464c-8c04-91fb9d9973e2",  # BigPig
+}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AMP PARAM SUFFIX MAP  (AT5 GUID prefix -> DSP param suffix)
+# Source: factory presets + ThumbnailName inference
+# Format: first 8 chars of GUID -> suffix string appended to knob names
+# e.g. Bass -> Bass_JCM800AT4
+# ─────────────────────────────────────────────────────────────────────────────
+
+AMP_SUFFIX_MAP = {
+    # ── Confirmed from factory presets ───────────────────────────────────────
+    "f2190a68": "53Bassman",
+    "71a76a9f": "AmericanTubeClean",
+    "82972243": "AmericanTubeClean2",
+    "31040aa1": "AmpScholtzRockmanX100",
+    "e3d7fcaa": "AmpVoxAC30BrianMay",
+    "ff274db4": "AmpegB15",
+    "f1d8d4c0": "AmpegBA500",
+    "862b5977": "AmpegSVT4Pro",
+    "52f28b23": "AmpegSVTClassic",
+    "2aa0f50f": "AmpegSVTVR",
+    "0265b273": "AmpegV4B",
+    "3fcc8ad1": "Bassman",
+    "fb5fc82f": "BritishTubeLead1",
+    "d9aa41f9": "CaliforniaTweed",
+    "5f4f50a1": "Champ57",
+    "016a8c2a": "Champion",
+    "cfa6b70c": "Darrell100",
+    "ebecb740": "Deacy",
+    "d4d5b530": "Deluxe57",
+    "89b3caab": "DeluxeReverb",
+    "a0fa7c56": "Fender57CustomChamp",
+    "bf860ad9": "Fender57CustomDeluxe",
+    "d3c791b9": "Fender65CustomSuperReverb",
+    "6f1c22b5": "FenderCustomBandmaster",
+    "6c421302": "FenderCustomPro",
+    "84f03443": "FenderShowman",
+    "95b9bc84": "FenderTwinReverbBright",
+    "8fe96936": "JCM800AT4",
+    "a913acaa": "Leslie3300",
+    "6c4fc562": "LeslieG37",
+    "c13004d2": "LeslieModel122",
+    "3f4b67ce": "LeslieModel122A",
+    "2e94cff0": "LeslieModel147",
+    "2ea3ecfb": "MarshallAFD100",
+    "155f0121": "MarshallJCMSlash",
+    "7788f707": "MarshallJTM45",
+    "d089ef66": "MarshallJTM45MkII",
+    "75ad4a0e": "MesaDualRectifier",
+    "6e5c01fe": "MesaMarkIICPlus",
+    "6ec4bf7a": "MesaMarkIII",
+    "1fbf7d6e": "MesaMarkIV",
+    "d31154a9": "MesaMarkV",
+    "1284c9cc": "MesaTA30",
+    "2ed4e896": "MesaTripleCrown",
+    "c85e5dc4": "MesaTripleRectifier",
+    "15761216": "MetalCleanT",
+    "907be0ce": "MetalHead",
+    "9400d18f": "MetalLeadT",
+    "dcc7c825": "MetalLeadV",
+    "3c25674f": "OrangeDualTerror",
+    "827aedfb": "OrangeOR50",
+    "1e170e52": "Peavey5150Satriani",
+    "2a1f483c": "Princeton",
+    "a2f18e96": "Silvertone1484",
+    "ad4ea282": "SolidStateBassPre",
+    "f4b89ab3": "Supersonic",
+    "b3869f27": "TwinAmp",
+    "dffa559d": "VibroKing",
+    "f0951b1e": "VibroVerb",
+    "1b5961b1": "VintageMetalLead",
+    "57c43635": "MarshallJVMSatriani",
+    # ── Inferred from ThumbnailName ───────────────────────────────────────────
+    "a91067a3": "MesaMKIIIClean",  # confirmed from preset
+    "ac08939a": "RolandJazzAmp120",
+    "300ed819": "Sunn1200",
+    "5d235e0d": "BritishCopper30TB",
+    "26fbbf20": "HiAmp",
+    "4af9d89a": "AmericanLeadMark3",
+    "ecb60014": "360Bass",
+    "ca4587b9": "VintageB",
+    "5558e374": "CarvinV3M",
+    "cbf3c00f": "JCM900",
+    "e1eed2cf": "RedPig",
+    "3930eb8b": "BritSilver",
+    "abdcae70": "DrZMaz18",
+    "cc59b472": "DrZZWreck",
+    "c936fc9c": "ENGLE650",
+    "88d927a0": "ENGLPowerball",
+    "d0546d04": "FenderProJunior",
+    "9e6f407a": "FenderBassman300",
+    "4c9e667b": "Fender57CustomTwin",
+    "55078333": "JetCity20",
+    "913db945": "JetCity100",
+    "6e8690b3": "OrangeOR120",
+    "99e446c7": "OrangeTinyTerror",
+    "e6151532": "OrangeRockerverb50",
+    "dd7b0e06": "OrangeAD30",
+    "e3260631": "OrangeThunderverb200",
+    "dfb00647": "OrangeAD200",
+    "4a22ac9f": "SoldanoSLO100",
+    "f058124b": "THDBiAmp",
+    "18f9d728": "NewYorkB750",
+    "f24511a1": "SilverPlate50",
+    "185e9cde": "VHandcraft4",
+    "4b13e59f": "German34",
+    "533d3c6c": "BritishTB30",
+    "bca11751": "ModernTubeLead",
+    "bd903ed7": "TubeVintageCombo",
+}
+
+AMP_KNOB_MAP = {
+    "a91067a3-fd80-40a8-be35-0681da5c4f47": {'Bass': 'Bass_MesaMKIIIClean', 'Mid': 'Middle_MesaMKIIIClean', 'Middle': 'Middle_MesaMKIIIClean', 'Treble': 'Treble_MesaMKIIIClean', 'Presence': 'Presence_MesaMKIIIClean', 'Pres': 'Presence_MesaMKIIIClean', 'Volume': 'Volume_MesaMKIIIClean', 'Master': 'Master_MesaMKIIIClean', 'Gain': 'Volume_MesaMKIIIClean'},
+    "016a8c2a-489e-49da-81d7-5b72feb60f74": {'Volume': 'Volume_Champion', 'Loudness1': 'Volume_Champion', 'Master': 'Volume_Champion'},
+    "0265b273-d648-47c7-a5ef-579acba82a0a": {'Bass': 'Bass_AmpegV4B', 'Mid': 'MidRange_AmpegV4B', 'Treble': 'Treble_AmpegV4B', 'Volume': 'Master_AmpegV4B', 'Master': 'Master_AmpegV4B', 'Gain': 'Gain_AmpegV4B', 'PreAmp': 'Gain_AmpegV4B', 'Sensitivity': 'Gain_AmpegV4B'},
+    "1284c9cc-6efa-4720-a0da-106a2d2af1d8": {'Volume': 'Volume1_MesaTA30', 'Loudness1': 'Volume1_MesaTA30'},
+    "155f0121-a2ee-4e16-aaa0-44948f9be44f": {'Bass': 'Bass_MarshallJCMSlash', 'Mid': 'Mid_MarshallJCMSlash', 'Middle': 'Mid_MarshallJCMSlash', 'Treble': 'Treble_MarshallJCMSlash', 'Pres': 'Presence_MarshallJCMSlash', 'Presence': 'Presence_MarshallJCMSlash', 'Volume': 'Volume_MarshallJCMSlash', 'Loudness1': 'Volume_MarshallJCMSlash', 'Master': 'Volume_MarshallJCMSlash', 'Gain': 'Gain_MarshallJCMSlash', 'PreAmp': 'Gain_MarshallJCMSlash', 'Sensitivity': 'Gain_MarshallJCMSlash', 'Lead': 'Lead_MarshallJCMSlash', 'Rhythm': 'Rhythm_MarshallJCMSlash'},
+    "15761216-f2fe-4d41-a6ec-9bff8199517c": {'Bass': 'Bass_MetalCleanT', 'Mid': 'Mid_MetalCleanT', 'Middle': 'Mid_MetalCleanT', 'Treble': 'Treble_MetalCleanT', 'Pres': 'Presence_MetalCleanT', 'Presence': 'Presence_MetalCleanT', 'Volume': 'Volume_MetalCleanT', 'Loudness1': 'Volume_MetalCleanT', 'Master': 'Volume_MetalCleanT', 'Gain': 'Gain_MetalCleanT', 'PreAmp': 'Gain_MetalCleanT', 'Sensitivity': 'Gain_MetalCleanT'},
+    "1b5961b1-f862-4c8a-9a9b-a920da8c5cc2": {'Bass': 'Bass_VintageMetalLead', 'Mid': 'Mid_VintageMetalLead', 'Middle': 'Mid_VintageMetalLead', 'Treble': 'Treble_VintageMetalLead', 'Pres': 'Presence_VintageMetalLead', 'Presence': 'Presence_VintageMetalLead', 'Volume': 'Volume_VintageMetalLead', 'Loudness1': 'Volume_VintageMetalLead', 'Master': 'Volume_VintageMetalLead', 'Gain': 'Gain_VintageMetalLead', 'PreAmp': 'Gain_VintageMetalLead', 'Sensitivity': 'Gain_VintageMetalLead'},
+    "1e170e52-9ff7-40ff-995f-fab2cdef7cf5": {'Pres': 'Presence_Peavey5150Satriani', 'Presence': 'Presence_Peavey5150Satriani'},
+    "1fbf7d6e-dad8-470f-b204-4d96b5466893": {'Bass': 'R1R2Bass_MesaMarkIV', 'Treble': 'R1Treble_MesaMarkIV', 'Lead': 'LeadDrive_MesaMarkIV'},
+    "2a1f483c-a136-45b6-81ec-e92c60f8d009": {'Bass': 'Bass_Princeton', 'Treble': 'Treble_Princeton', 'Volume': 'Volume_Princeton', 'Loudness1': 'Volume_Princeton', 'Master': 'Volume_Princeton'},
+    "2aa0f50f-a6c9-4edd-97c2-df71a24087db": {'Mid': 'MidRange_AmpegSVTVR', 'Volume': 'Volume1_AmpegSVTVR', 'Loudness1': 'Volume1_AmpegSVTVR', 'Loudness2': 'Volume2_AmpegSVTVR'},
+    "2e94cff0-16da-445b-98bb-b8a47bc2d2da": {'Volume': 'Volume_LeslieModel147', 'Loudness1': 'Volume_LeslieModel147', 'Master': 'Volume_LeslieModel147', 'Gain': 'Gain_LeslieModel147', 'PreAmp': 'Gain_LeslieModel147', 'Sensitivity': 'Gain_LeslieModel147'},
+    "2ea3ecfb-1b0c-417a-8788-86f5915f43c5": {'Bass': 'Bass_MarshallAFD100', 'Mid': 'Mid_MarshallAFD100', 'Middle': 'Mid_MarshallAFD100', 'Treble': 'Treble_MarshallAFD100', 'Pres': 'Presence_MarshallAFD100', 'Presence': 'Presence_MarshallAFD100', 'Volume': 'Volume_MarshallAFD100', 'Loudness1': 'Volume_MarshallAFD100', 'Master': 'Volume_MarshallAFD100', 'Gain': 'Gain_MarshallAFD100', 'PreAmp': 'Gain_MarshallAFD100', 'Sensitivity': 'Gain_MarshallAFD100'},
+    "2ed4e896-6cf4-40ee-bc12-15f0c4d38b65": {'Master': 'Output_MesaTripleCrown'},
+    "3930eb8b-3eda-4079-b86d-7bfd7d4449bc": {'Bass': 'Bass_MarshallSilverJubilee', 'Mid': 'Mid_MarshallSilverJubilee', 'Middle': 'Mid_MarshallSilverJubilee', 'Treble': 'Treble_MarshallSilverJubilee', 'Pres': 'Presence_MarshallSilverJubilee', 'Presence': 'Presence_MarshallSilverJubilee', 'Volume': 'Volume_MarshallSilverJubilee', 'Loudness1': 'Volume_MarshallSilverJubilee', 'Master': 'Volume_MarshallSilverJubilee', 'Gain': 'Gain_MarshallSilverJubilee', 'PreAmp': 'Gain_MarshallSilverJubilee', 'Sensitivity': 'Gain_MarshallSilverJubilee', 'Lead': 'Lead_MarshallSilverJubilee', 'Rhythm': 'Rhythm_MarshallSilverJubilee'},
+    "3c25674f-a418-4fec-863c-f94495c746a0": {'Master': 'Output_OrangeDualTerror'},
+    "3f4b67ce-214f-445f-a0c1-b7d08f13029d": {'Volume': 'Volume_LeslieModel122A', 'Loudness1': 'Volume_LeslieModel122A', 'Master': 'Volume_LeslieModel122A', 'Gain': 'Gain_LeslieModel122A', 'PreAmp': 'Gain_LeslieModel122A', 'Sensitivity': 'Gain_LeslieModel122A'},
+    "3fcc8ad1-6d5e-416d-9c3d-7aae91c6f4d4": {'Bass': 'Bass_Bassman', 'Mid': 'Middle_Bassman', 'Middle': 'Middle_Bassman', 'Treble': 'Treble_Bassman', 'Pres': 'Presence_Bassman', 'Presence': 'Presence_Bassman', 'Volume': 'Volume_Bassman', 'Loudness1': 'Volume_Bassman', 'Master': 'Volume_Bassman'},
+    "41f3868c-62c3-4bd0-8c29-130e9426d4e9": {'Volume': 'Volume1_DSPInputMode', 'Loudness1': 'Volume1_DSPInputMode', 'Loudness2': 'Volume2_AmpegHeritageB15N'},
+    "4a22ac9f-aabb-4180-b697-5d5710a1acc2": {'Bass': 'Bass', 'Mid': 'Middle', 'Middle': 'Middle', 'Treble': 'Treble', 'Pres': 'Presence', 'Presence': 'Presence'},
+    "52f28b23-80e3-4f43-9508-4447258b11c0": {'Bass': 'Bass_AmpegSVTClassic', 'Mid': 'Mid_AmpegSVTClassic', 'Middle': 'Mid_AmpegSVTClassic', 'Treble': 'Treble_AmpegSVTClassic', 'Volume': 'Master_AmpegSVTClassic', 'Master': 'Master_AmpegSVTClassic', 'Gain': 'Gain_AmpegSVTClassic', 'PreAmp': 'Gain_AmpegSVTClassic', 'Sensitivity': 'Gain_AmpegSVTClassic'},
+    "592bb813-9b42-4e33-af03-8ecc3f6edc93": {'Bass': 'Bass_Roland120Dime', 'Mid': 'Mid_Roland120Dime', 'Middle': 'Mid_Roland120Dime', 'Treble': 'Treble_Roland120Dime', 'Volume': 'Volume_Roland120Dime', 'Loudness1': 'Volume_Roland120Dime', 'Master': 'Volume_Roland120Dime'},
+    "5f4f50a1-d5cb-43be-ad11-084e4ff21ea6": {'Volume': 'Volume_Champ57', 'Loudness1': 'Volume_Champ57', 'Master': 'Volume_Champ57'},
+    "6c421302-9602-4ee8-b94a-672aa24cdde4": {'Bass': 'Bass_FenderCustomPro', 'Treble': 'Treble_FenderCustomPro', 'Pres': 'Presence_FenderCustomPro', 'Presence': 'Presence_FenderCustomPro'},
+    "6c4fc562-aa92-4e39-b73e-85773fd6a97a": {'Bass': 'Bass_LeslieG37', 'Mid': 'Mid_LeslieG37', 'Middle': 'Mid_LeslieG37', 'Treble': 'Treble_LeslieG37'},
+    "6e5c01fe-e1be-4e91-8657-74718ac8cb6e": {'Bass': 'Bass_MesaMarkIICPlus', 'Mid': 'Middle_MesaMarkIICPlus', 'Middle': 'Middle_MesaMarkIICPlus', 'Treble': 'Treble_MesaMarkIICPlus', 'Pres': 'Presence_MesaMarkIICPlus', 'Presence': 'Presence_MesaMarkIICPlus', 'Volume': 'Volume_MesaMarkIICPlus', 'Loudness1': 'Volume_MesaMarkIICPlus', 'Master': 'Master_MesaMarkIICPlus', 'Lead': 'Lead_MesaMarkIICPlus'},
+    "6e8690b3-f6cf-4c36-b3c2-7f38fcc5706e": {'Gain': 'Gain', 'PreAmp': 'Gain', 'Sensitivity': 'Gain'},
+    "6ec4bf7a-dc59-4443-b2fb-1e645bf5192c": {'Bass': 'Bass_MesaMarkIII', 'Mid': 'Middle_MesaMarkIII', 'Middle': 'Middle_MesaMarkIII', 'Treble': 'Treble_MesaMarkIII', 'Pres': 'Presence_MesaMarkIII', 'Presence': 'Presence_MesaMarkIII', 'Volume': 'Volume_MesaMarkIII', 'Loudness1': 'Volume_MesaMarkIII', 'Master': 'Master_MesaMarkIII', 'Lead': 'Lead_MesaMarkIII', 'Rhythm': 'Rhy_MesaMarkIII'},
+    "6f1c22b5-3593-4d86-a9a3-fae8c9504d77": {'Bass': 'Bass_FenderCustomBandmaster', 'Treble': 'Treble_FenderCustomBandmaster', 'Pres': 'Presence_FenderCustomBandmaster', 'Presence': 'Presence_FenderCustomBandmaster'},
+    "71a76a9f-cf70-4f59-971f-9864a055523c": {'Bass': 'Bass_AmericanTubeClean', 'Mid': 'Mid_AmericanTubeClean', 'Middle': 'Mid_AmericanTubeClean', 'Treble': 'Treble_AmericanTubeClean', 'Pres': 'Presence_AmericanTubeClean', 'Presence': 'Presence_AmericanTubeClean', 'Volume': 'Volume_AmericanTubeClean', 'Loudness1': 'Volume_AmericanTubeClean', 'Master': 'Volume_AmericanTubeClean', 'Gain': 'Gain_AmericanTubeClean', 'PreAmp': 'Gain_AmericanTubeClean', 'Sensitivity': 'Gain_AmericanTubeClean'},
+    "75ad4a0e-5c75-443d-8617-9681c4fe58d3": {'Bass': 'Ch1Bass_MesaDualRectifier', 'Mid': 'Ch1Mid_MesaDualRectifier', 'Treble': 'Ch1Treble_MesaDualRectifier'},
+    "7788f707-4ef2-44cd-862a-a82ffdf7172b": {'Bass': 'Bass_MarshallJTM45', 'Mid': 'Mid_MarshallJTM45', 'Middle': 'Mid_MarshallJTM45', 'Treble': 'Treble_MarshallJTM45', 'Pres': 'Presence_MarshallJTM45', 'Presence': 'Presence_MarshallJTM45'},
+    "802af8da-63c6-4ccf-a4b9-6d13255ef57f": {'Bass': 'Bass', 'Mid': 'MidLevel', 'Treble': 'Treble', 'Volume': 'Volume', 'Loudness1': 'Volume', 'Master': 'Volume', 'Gain': 'Gain', 'PreAmp': 'Gain', 'Sensitivity': 'Gain'},
+    "827aedfb-cdc1-412e-8e47-5bac3c3c6d06": {'Bass': 'Bass_OrangeOR50', 'Mid': 'Mid_OrangeOR50', 'Middle': 'Mid_OrangeOR50', 'Treble': 'Treble_OrangeOR50', 'Volume': 'Volume_OrangeOR50', 'Loudness1': 'Volume_OrangeOR50', 'Master': 'Volume_OrangeOR50', 'Gain': 'Gain_OrangeOR50', 'PreAmp': 'Gain_OrangeOR50', 'Sensitivity': 'Gain_OrangeOR50'},
+    "82972243-cd55-4b43-82f3-f15e3bc13dc7": {'Bass': 'Bass_AmericanTubeClean2', 'Mid': 'Mid_AmericanTubeClean2', 'Middle': 'Mid_AmericanTubeClean2', 'Treble': 'Treble_AmericanTubeClean2', 'Pres': 'Presence_AmericanTubeClean2', 'Presence': 'Presence_AmericanTubeClean2', 'Volume': 'Volume_AmericanTubeClean2', 'Loudness1': 'Volume_AmericanTubeClean2', 'Master': 'Volume_AmericanTubeClean2', 'Gain': 'Gain_AmericanTubeClean2', 'PreAmp': 'Gain_AmericanTubeClean2', 'Sensitivity': 'Gain_AmericanTubeClean2'},
+    "84f03443-ae64-4c7e-970f-06d1191cd906": {'Bass': 'Bass_FenderShowman', 'Mid': 'Mid_FenderShowman', 'Middle': 'Mid_FenderShowman', 'Treble': 'Treble_FenderShowman', 'Pres': 'Presence_FenderShowman', 'Presence': 'Presence_FenderShowman', 'Volume': 'Volume_FenderShowman', 'Loudness1': 'Volume_FenderShowman', 'Master': 'Volume_FenderShowman', 'Gain': 'Gain_FenderShowman', 'PreAmp': 'Gain_FenderShowman', 'Sensitivity': 'Gain_FenderShowman'},
+    "862b5977-9c12-4665-88cd-86f668da8877": {'Bass': 'Bass_AmpegSVT4Pro', 'Mid': 'Mid_AmpegSVT4Pro', 'Middle': 'Mid_AmpegSVT4Pro', 'Treble': 'Treble_AmpegSVT4Pro', 'Volume': 'Master_AmpegSVT4Pro', 'Master': 'Master_AmpegSVT4Pro', 'Gain': 'Gain_AmpegSVT4Pro', 'PreAmp': 'Gain_AmpegSVT4Pro', 'Sensitivity': 'Gain_AmpegSVT4Pro'},
+    "89b3caab-dffb-4c29-85d9-2a60cb93c566": {'Bass': 'Bass_DeluxeReverb', 'Treble': 'Treble_DeluxeReverb', 'Volume': 'Volume_DeluxeReverb', 'Loudness1': 'Volume_DeluxeReverb', 'Master': 'Volume_DeluxeReverb'},
+    "8fe96936-5178-4950-9b80-d89c32534bad": {'Bass': 'Bass_JCM800AT4', 'Mid': 'Middle_JCM800AT4', 'Middle': 'Middle_JCM800AT4', 'Treble': 'Treble_JCM800AT4', 'Pres': 'Presence_JCM800AT4', 'Presence': 'Presence_JCM800AT4', 'Volume': 'Master_JCM800AT4', 'Master': 'Master_JCM800AT4', 'Gain': 'PreAmp_JCM800AT4', 'PreAmp': 'PreAmp_JCM800AT4', 'Sensitivity': 'Sensitivity_JCM800AT4'},
+    "907be0ce-a419-4281-901f-dcd6763de54a": {'Bass': 'Bass_MetalHead', 'Mid': 'Mid_MetalHead', 'Middle': 'Mid_MetalHead', 'Treble': 'Treble_MetalHead', 'Pres': 'Presence_MetalHead', 'Presence': 'Presence_MetalHead', 'Volume': 'Volume_MetalHead', 'Loudness1': 'Volume_MetalHead', 'Master': 'Volume_MetalHead', 'Gain': 'Drive_MetalHead'},
+    "9400d18f-5f72-40ac-aa37-861ba3f18da5": {'Bass': 'Bass_MetalLeadT', 'Mid': 'Mid_MetalLeadT', 'Middle': 'Mid_MetalLeadT', 'Treble': 'Treble_MetalLeadT', 'Pres': 'Presence_MetalLeadT', 'Presence': 'Presence_MetalLeadT', 'Volume': 'Volume_MetalLeadT', 'Loudness1': 'Volume_MetalLeadT', 'Master': 'Volume_MetalLeadT', 'Gain': 'Gain_MetalLeadT', 'PreAmp': 'Gain_MetalLeadT', 'Sensitivity': 'Gain_MetalLeadT'},
+    "95b9bc84-89fa-48f5-a336-26a30a044ca3": {'Bass': 'Bass_FenderTwinReverbBright', 'Mid': 'Mid_FenderTwinReverbBright', 'Middle': 'Mid_FenderTwinReverbBright', 'Treble': 'Treble_FenderTwinReverbBright', 'Pres': 'Presence_FenderTwinReverbBright', 'Presence': 'Presence_FenderTwinReverbBright', 'Volume': 'Volume_FenderTwinReverbBright', 'Loudness1': 'Volume_FenderTwinReverbBright', 'Master': 'Volume_FenderTwinReverbBright', 'Gain': 'Gain_FenderTwinReverbBright', 'PreAmp': 'Gain_FenderTwinReverbBright', 'Sensitivity': 'Gain_FenderTwinReverbBright'},
+    "99e446c7-49df-45b1-bff9-26d95e10c763": {'Treble': 'Tone', 'Volume': 'Volume', 'Loudness1': 'Volume', 'Master': 'Output', 'Gain': 'Gain', 'PreAmp': 'Gain', 'Sensitivity': 'Gain'},
+    "a0fa7c56-0772-4ddd-9320-c2ee254a3c4a": {'Volume': 'Volume_Fender57CustomChamp', 'Loudness1': 'Volume_Fender57CustomChamp', 'Master': 'Volume_Fender57CustomChamp'},
+    "a2f18e96-4d56-4372-b438-11bd0f42f6f3": {'Bass': 'Ch1Bass_Silvertone1484', 'Treble': 'Ch1Treble_Silvertone1484'},
+    "a913acaa-80f1-4703-981c-406ec2e50874": {'Volume': 'Volume_Leslie3300', 'Loudness1': 'Volume_Leslie3300', 'Master': 'Volume_Leslie3300'},
+    "ad4ea282-ced9-49d0-9670-e9782ce5c5b7": {'Bass': 'Bass_SolidStateBassPre', 'Mid': 'Mid_SolidStateBassPre', 'Middle': 'Mid_SolidStateBassPre', 'Treble': 'Treble_SolidStateBassPre', 'Pres': 'Presence_SolidStateBassPre', 'Presence': 'Presence_SolidStateBassPre', 'Volume': 'Volume_SolidStateBassPre', 'Loudness1': 'Volume_SolidStateBassPre', 'Master': 'Volume_SolidStateBassPre', 'Gain': 'Gain_SolidStateBassPre', 'PreAmp': 'Gain_SolidStateBassPre', 'Sensitivity': 'Gain_SolidStateBassPre'},
+    "b3869f27-a9f1-4482-add4-9512c16917ea": {'Bass': 'Bass_TwinAmp', 'Mid': 'Middle_TwinAmp', 'Middle': 'Middle_TwinAmp', 'Treble': 'Treble_TwinAmp', 'Volume': 'Volume_TwinAmp', 'Loudness1': 'Volume_TwinAmp', 'Master': 'Volume_TwinAmp'},
+    "bf860ad9-cd8a-425b-8049-29211fce237a": {'Treble': 'Tone_Fender57CustomDeluxe'},
+    "c13004d2-9a19-4ae9-8c0e-9894c5e769c8": {'Volume': 'Volume_LeslieModel122', 'Loudness1': 'Volume_LeslieModel122', 'Master': 'Volume_LeslieModel122', 'Gain': 'Gain_LeslieModel122', 'PreAmp': 'Gain_LeslieModel122', 'Sensitivity': 'Gain_LeslieModel122'},
+    "c85e5dc4-d051-4aad-846f-038b0b5233c5": {'Bass': 'Ch1Bass_MesaTripleRectifier', 'Mid': 'Ch1Mid_MesaTripleRectifier', 'Treble': 'Ch1Treble_MesaTripleRectifier'},
+    "cfa6b70c-2c6c-4b83-b881-571a6343dfac": {'Bass': 'Bass_Darrell100', 'Mid': 'Middle_Darrell100', 'Middle': 'Middle_Darrell100', 'Treble': 'Treble_Darrell100', 'Pres': 'Presence_Darrell100', 'Presence': 'Presence_Darrell100'},
+    "d089ef66-b5c4-4274-910c-6a6ee194cf04": {'Bass': 'Bass_MarshallJTM45MkII', 'Mid': 'Mid_MarshallJTM45MkII', 'Middle': 'Mid_MarshallJTM45MkII', 'Treble': 'Treble_MarshallJTM45MkII', 'Pres': 'Presence_MarshallJTM45MkII', 'Presence': 'Presence_MarshallJTM45MkII', 'Volume': 'Volume_MarshallJTM45MkII', 'Loudness1': 'Volume_MarshallJTM45MkII', 'Master': 'Volume_MarshallJTM45MkII', 'Gain': 'Gain_MarshallJTM45MkII', 'PreAmp': 'Gain_MarshallJTM45MkII', 'Sensitivity': 'Gain_MarshallJTM45MkII'},
+    "d31154a9-8b5f-4abf-b079-d2e728d2c564": {'Master': 'Output_MesaMarkV'},
+    "d3c791b9-58f1-41d2-8a88-797e98cc5b29": {'Bass': 'Bass_Fender65CustomSuperReverb', 'Mid': 'Middle_Fender65CustomSuperReverb', 'Middle': 'Middle_Fender65CustomSuperReverb', 'Treble': 'Treble_Fender65CustomSuperReverb', 'Volume': 'Volume_Fender65CustomSuperReverb', 'Loudness1': 'Volume_Fender65CustomSuperReverb', 'Master': 'Volume_Fender65CustomSuperReverb'},
+    "d4d5b530-0ce1-46cf-a47e-bf0224fa715e": {'Treble': 'Tone_Deluxe57'},
+    "d9aa41f9-4e51-4719-929c-251d07f2f276": {'Bass': 'Bass_CaliforniaTweed', 'Mid': 'Mid_CaliforniaTweed', 'Middle': 'Mid_CaliforniaTweed', 'Treble': 'Treble_CaliforniaTweed', 'Pres': 'Presence_CaliforniaTweed', 'Presence': 'Presence_CaliforniaTweed', 'Volume': 'Master_CaliforniaTweed', 'Master': 'Master_CaliforniaTweed', 'Gain': 'Gain_CaliforniaTweed', 'PreAmp': 'Gain_CaliforniaTweed', 'Sensitivity': 'Gain_CaliforniaTweed'},
+    "dcc7c825-76f4-4703-8e1f-b8a12b30b1de": {'Bass': 'Bass_MetalLeadV', 'Mid': 'Mid_MetalLeadV', 'Middle': 'Mid_MetalLeadV', 'Treble': 'Treble_MetalLeadV', 'Pres': 'Presence_MetalLeadV', 'Presence': 'Presence_MetalLeadV', 'Volume': 'Volume_MetalLeadV', 'Loudness1': 'Volume_MetalLeadV', 'Master': 'Volume_MetalLeadV', 'Gain': 'Gain_MetalLeadV', 'PreAmp': 'Gain_MetalLeadV', 'Sensitivity': 'Gain_MetalLeadV'},
+    "dd7b0e06-a17a-4851-83c4-ee32ca303b01": {'Bass': 'Bass', 'Mid': 'Middle', 'Middle': 'Middle', 'Treble': 'Treble', 'Volume': 'Master', 'Master': 'Master', 'Gain': 'Gain', 'PreAmp': 'Gain', 'Sensitivity': 'Gain'},
+    "dffa559d-7b12-464a-9fbf-877ca25f5cf3": {'Bass': 'Bass_VibroKing', 'Mid': 'Mid_VibroKing', 'Middle': 'Mid_VibroKing', 'Treble': 'Treble_VibroKing', 'Volume': 'Volume_VibroKing', 'Loudness1': 'Volume_VibroKing', 'Master': 'Volume_VibroKing'},
+    "e1eed2cf-6777-46c4-ada2-65df0d7afc46": {'Bass': 'Bass_MarshallMajor', 'Mid': 'Mid_MarshallMajor', 'Middle': 'Mid_MarshallMajor', 'Treble': 'Treble_MarshallMajor', 'Pres': 'Presence_MarshallMajor', 'Presence': 'Presence_MarshallMajor'},
+    "e3260631-d81f-4c76-9e4f-d12be6ede5cb": {'Bass': 'Bass', 'Mid': 'Mid', 'Middle': 'Mid', 'Treble': 'Treble', 'Volume': 'VolumeA', 'Gain': 'GainA'},
+    "e3d7fcaa-742f-421c-902e-5f04c0290b96": {'Volume': 'Volume_AmpVoxAC30BrianMay', 'Loudness1': 'Volume_AmpVoxAC30BrianMay', 'Master': 'Volume_AmpVoxAC30BrianMay'},
+    "e6151532-1028-422c-9a5d-fc57594ce8e8": {'Bass': 'Bass', 'Mid': 'Middle', 'Middle': 'Middle', 'Treble': 'Treble', 'Volume': 'Volume', 'Loudness1': 'Volume', 'Master': 'Volume', 'Gain': 'Gain', 'PreAmp': 'Gain', 'Sensitivity': 'Gain'},
+    "f0951b1e-91d2-4360-80d7-793fa785d2d6": {'Bass': 'Bass_VibroVerb', 'Treble': 'Treble_VibroVerb', 'Volume': 'Volume_VibroVerb', 'Loudness1': 'Volume_VibroVerb', 'Master': 'Volume_VibroVerb'},
+    "f1d8d4c0-770c-469e-88fc-0fa2ffe7e8bc": {'Bass': 'Bass_AmpegBA500', 'Mid': 'Mid_AmpegBA500', 'Middle': 'Mid_AmpegBA500', 'Treble': 'Treble_AmpegBA500', 'Volume': 'Master_AmpegBA500', 'Master': 'Master_AmpegBA500', 'Gain': 'Gain_AmpegBA500', 'PreAmp': 'Gain_AmpegBA500', 'Sensitivity': 'Gain_AmpegBA500'},
+    "f2190a68-52ea-408a-9c39-2ea8279c0d43": {'Treble': 'Tone_53Bassman'},
+    "f4b89ab3-8ca6-44ee-b90b-a570040c8a3d": {'Bass': 'Bass_Supersonic', 'Mid': 'Middle_Supersonic', 'Middle': 'Middle_Supersonic', 'Treble': 'Treble_Supersonic', 'Volume': 'Volume_Supersonic', 'Loudness1': 'Volume_Supersonic', 'Master': 'Volume_Supersonic'},
+    "fb5fc82f-a926-4591-87d2-168906fd79d3": {'Bass': 'Bass_BritishTubeLead1', 'Mid': 'Mid_BritishTubeLead1', 'Middle': 'Mid_BritishTubeLead1', 'Treble': 'Treble_BritishTubeLead1', 'Pres': 'Presence_BritishTubeLead1', 'Presence': 'Presence_BritishTubeLead1', 'Volume': 'Volume_BritishTubeLead1', 'Loudness1': 'Volume_BritishTubeLead1', 'Master': 'Volume_BritishTubeLead1', 'Gain': 'Gain_BritishTubeLead1', 'PreAmp': 'Gain_BritishTubeLead1', 'Sensitivity': 'Gain_BritishTubeLead1'},
+    "ff274db4-43c3-4fb9-b44d-d04aefd13b28": {'Bass': 'Bass_AmpegB15', 'Mid': 'Mid_AmpegB15', 'Middle': 'Mid_AmpegB15', 'Treble': 'Treble_AmpegB15', 'Volume': 'Master_AmpegB15', 'Master': 'Master_AmpegB15', 'Gain': 'Gain_AmpegB15', 'PreAmp': 'Gain_AmpegB15', 'Sensitivity': 'Gain_AmpegB15'},
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -483,14 +1013,21 @@ KNOB_NAME_MAP = {
     "Rhythm":     "Rhythm",
 }
 
+
+# Amp keys that are direct-inject / no cabinet
+DI_AMP_KEYS = {
+    "DI_Amp_TubePre",
+    "DI_Amp_BassDriver",
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # AT5P XML TEMPLATE
 # ─────────────────────────────────────────────────────────────────────────────
 
 AT5P_TEMPLATE = """\
 <?xml version="1.0" ?>
-<Preset Version="2" Format="at5p" GUID="{guid}" PresetBPM="120" ProgramChange="-1">
-    <Chain Preset="Chain11Split" DIBeforeAmp="0" />
+<Preset Version="1" Format="at5p" GUID="{guid}" PresetBPM="120" ProgramChange="-1">
+    <Chain Preset="Chain11" MonoChainDualCab="1" DIBeforeAmp="0" />
     <Input Input="1" />
     <Tuner Bypass="1" Mute="0" OutputVolume="1" TunerType="354eca51-457a-41b7-917d-ce6117586905">
         <Tuner Reference="440" NoteReferemce="A" Transpose="0" Temperament="Equal" />
@@ -513,7 +1050,7 @@ AT5P_TEMPLATE = """\
     <StompB3 Bypass="0" Mute="1" OutputVolume="1" {null6_attrs}>
 {null6_slots}
     </StompB3>
-    <AmpA Bypass="0" Mute="0" OutputVolume="1" Model="{amp_guid}">
+    <AmpA Bypass="0" Mute="{amp_muted}" OutputVolume="1" Model="{amp_guid}">
         <Amp {amp_params}/>
     </AmpA>
     <AmpB Bypass="0" Mute="1" OutputVolume="1" Model="{null_guid}">
@@ -531,7 +1068,7 @@ AT5P_TEMPLATE = """\
     <LoopFxC Bypass="0" Mute="1" OutputVolume="1" {null4_attrs}>
 {null4_slots}
     </LoopFxC>
-    <CabA Bypass="0" Mute="0" CabModel="{cab_model}" SpeakerModel0="{speaker_a}" SpeakerModel1="{speaker_a}" SpeakerModel2="{speaker_b}" SpeakerModel3="{speaker_b}" IRDecimation="1">
+    <CabA Bypass="0" Mute="{cab_muted}" CabModel="{cab_model}" SpeakerModel0="{speaker_a}" SpeakerModel1="{speaker_a}" SpeakerModel2="{speaker_b}" SpeakerModel3="{speaker_b}" IRDecimation="1">
         <Cab HighLevel="0.77" RoomType="Large Studio" RoomMicType="Condenser 87" Mic0Model="1e41acc4-85af-4e84-bee4-eabc0be5fef1" Mic1Model="9e444286-cab4-46a4-bfa3-a6d55b3ffcfb" Mic0Angle="0" Mic1Angle="0" Mic0XAxis="-0.0134551" Mic1XAxis="0.164812" Mic0YAxis="-0.213863" Mic1YAxis="0.416267" Mic0Distance="0" Mic1Distance="0.131415" Mic0Speaker="0" Mic1Speaker="1" GUILoadComplete="0" />
     </CabA>
     <CabB Bypass="0" Mute="1" CabModel="{cab_model}" SpeakerModel0="{speaker_b}" SpeakerModel1="{speaker_b}" SpeakerModel2="{speaker_b}" SpeakerModel3="{speaker_b}" IRDecimation="1">
@@ -613,10 +1150,15 @@ def lookup_effect(rs_key):
             return v
     return None
 
-def rs_knob_to_at5(rs_key, rs_value):
-    """Convert RS knob key+value (0-100) to AT5 param name+value (0-10)."""
+def rs_knob_to_at5(rs_key, rs_value, amp_guid=""):
+    """Convert RS knob key+value (0-100) to AT5 param name+value (0-10).
+    Appends the amp-specific DSP suffix if known."""
     suffix = rs_key.split("_")[-1]
     at5_name = KNOB_NAME_MAP.get(suffix, suffix)
+    # Append model suffix if known
+    amp_suffix = AMP_SUFFIX_MAP.get(amp_guid[:8], "")
+    if amp_suffix:
+        at5_name = f"{at5_name}_{amp_suffix}"
     return at5_name, rs_value / 10.0
 
 def build_stomp_section(gear_slots, n_total=6):
@@ -690,26 +1232,39 @@ def convert_tone(tone_path: Path, output_dir: Path):
     amp_guid, amp_exact = lookup_amp(rs_amp_key)
 
     if not amp_guid:
-        warnings.append(f"Unknown amp '{rs_amp_key}' -> using AmpLess")
-        amp_guid = "d36a32bf-200c-4906-93b9-0aa91cd1f579"
+        warnings.append(f"Unknown amp '{rs_amp_key}' -> using null amp")
+        amp_guid = NULL_GUID
     elif not amp_exact:
         warnings.append(f"Fuzzy amp match for '{rs_amp_key}'")
 
     knob_values = amp_data.get('KnobValues', {})
     amp_params_parts = []
     for rs_k, rs_v in knob_values.items():
-        at5_name, at5_val = rs_knob_to_at5(rs_k, rs_v)
+        at5_name, at5_val = rs_knob_to_at5(rs_k, rs_v, amp_guid)
         amp_params_parts.append(f'{at5_name}="{at5_val:.4f}"')
     amp_params_str = " ".join(amp_params_parts)
 
     # ── Cabinet ───────────────────────────────────────────────────────────────
     cab_data   = gear.get('Cabinet', {})
     rs_cab_key = cab_data.get('Key', '')
-    cab_model, speaker_a = lookup_cab(rs_cab_key)
-    speaker_b  = DEFAULT_SPEAKER_B
+    is_di_tone = rs_amp_key in DI_AMP_KEYS
 
-    if rs_cab_key and rs_cab_key not in CAB_ENCLOSURE_MAP:
-        warnings.append(f"Fuzzy/default cab match for '{rs_cab_key}'")
+    if is_di_tone:
+        # DI tones have no amp or cabinet — use a clean amp GUID (muted) so AT5 validates
+        # amp_guid already set from AMP_MAP lookup above (American Tube Clean 1)
+        amp_params_str = ""
+        cab_model = DEFAULT_CAB_4x12
+        speaker_a = DEFAULT_SPEAKER_A
+        speaker_b = DEFAULT_SPEAKER_B
+        cab_muted = "1"
+        amp_muted = "1"
+    else:
+        amp_muted = "0"
+        cab_model, speaker_a = lookup_cab(rs_cab_key)
+        speaker_b  = DEFAULT_SPEAKER_B
+        cab_muted  = "0"
+        if rs_cab_key and rs_cab_key not in CAB_ENCLOSURE_MAP:
+            warnings.append(f"Fuzzy/default cab match for '{rs_cab_key}'"  )
 
     # ── Pre-amp stomps (PrePedal1/2 -> StompA1 slots 0-1) ────────────────────
     pre_pedals = [gear.get('PrePedal1', {}), gear.get('PrePedal2', {})]
@@ -740,11 +1295,13 @@ def convert_tone(tone_path: Path, output_dir: Path):
     xml = AT5P_TEMPLATE.format(
         guid          = str(uuid.uuid4()),
         amp_guid      = amp_guid,
+        amp_muted     = amp_muted,
         amp_params    = amp_params_str,
         null_guid     = NULL_GUID,
         cab_model     = cab_model,
-        speaker_a     = speaker_a,
-        speaker_b     = speaker_b,
+        cab_muted     = cab_muted,
+        speaker_a     = speaker_a.replace('-', ''),
+        speaker_b     = speaker_b.replace('-', ''),
         stompa1_attrs = stompa1_attrs,
         stompa1_slots = stompa1_slots,
         stompb1_attrs = stompb1_attrs,
@@ -775,11 +1332,325 @@ def convert_tone(tone_path: Path, output_dir: Path):
 # CLI
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ─────────────────────────────────────────────────────────────────────────────
+# RS2014 / PSARC SUPPORT
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# RS2014 GearList format (extracted from PSARC via Slopsmith's psarc module):
+#   {
+#     "Key": "RageKilling_lead",
+#     "Name": "Killing Lead",
+#     "GearList": {
+#       "Amp":      { "Key": "Amp_MarshallJCM800", "Knobs": {"Amp_MarshallJCM800_Gain": 65, ...} },
+#       "Cabinet":  { "Key": "Cab_Marshall1960a_57_Edge" },
+#       "PrePedal1": { "Key": "Pedal_UKWah", "Knobs": {...} },
+#       ...
+#     }
+#   }
+#
+# Differences from RS+ format:
+#   - Wrapped in GearList directly (no outer toneData key)
+#   - Amp knobs key is "Knobs" not "KnobValues"
+#   - PrePedal3/4 and PostPedal3/4 exist (RS+ only has 1/2)
+#   - RS2014 amp keys can be real brand names (Amp_MarshallJCM800) or
+#     fictional RS keys (Amp_BT45) — both are in AMP_MAP above
+#
+# Everything else (AMP_MAP, rs_knob_to_at5, build_stomp_section,
+# AT5P_TEMPLATE) is reused unchanged.
+
+import re as _re
+
+import xml.etree.ElementTree as _ET
+
+_NS_TONE = "http://schemas.datacontract.org/2004/07/RocksmithToolkitLib.DLCPackage.Manifest.Tone"
+_NS_MS   = "http://schemas.microsoft.com/2003/10/Serialization/Arrays"
+_NS_XSI  = "http://www.w3.org/2001/XMLSchema-instance"
+
+
+def _parse_tone2014_xml(path: Path):
+    """
+    Parse a .tone2014.xml file (WCF-serialised Rocksmith 2014 tone).
+    Returns a list of tone dicts with keys: key, name, gear (GearList dict).
+
+    GearList dict format mirrors _parse_rs2014_json output:
+      { "Amp": {"Key": "Amp_HG500", "Knobs": {...}},
+        "Cabinet": {"Key": "Cab_HG215C_57_Cone", "Knobs": {}},
+        "PrePedal1": {"Key": "Pedal_EQ5", "Knobs": {...}}, ... }
+    """
+    try:
+        tree = _ET.parse(path)
+    except Exception as e:
+        print(f"  ERROR parsing XML {path.name}: {e}")
+        return []
+    root = tree.getroot()
+
+    def _find(el, tag):
+        result = el.find(f"{{{_NS_TONE}}}{tag}")
+        if result is None:
+            result = el.find(tag)
+        return result
+
+    def _parse_slot(el):
+        """Parse one GearList slot element into {"Key": ..., "Knobs": {...}}."""
+        if el is None:
+            return None
+        if el.get(f"{{{_NS_XSI}}}nil") == "true":
+            return None
+        key_el = _find(el, "PedalKey")
+        if key_el is None or not key_el.text:
+            return None
+        key = key_el.text.strip()
+        knobs = {}
+        knob_el = _find(el, "KnobValues")
+        if knob_el is not None:
+            for kv in knob_el:
+                k = kv.find(f"{{{_NS_MS}}}Key")
+                v = kv.find(f"{{{_NS_MS}}}Value")
+                if k is not None and v is not None and k.text and v.text:
+                    try:
+                        knobs[k.text.strip()] = float(v.text)
+                    except ValueError:
+                        pass
+        return {"Key": key, "Knobs": knobs}
+
+    gear_el = _find(root, "GearList")
+    if gear_el is None:
+        print(f"  WARNING: no GearList in {path.name}")
+        return []
+
+    gear = {}
+    for slot_name in ["Amp", "Cabinet",
+                       "PrePedal1", "PrePedal2", "PrePedal3", "PrePedal4",
+                       "PostPedal1", "PostPedal2", "PostPedal3", "PostPedal4",
+                       "Rack1", "Rack2", "Rack3", "Rack4"]:
+        slot_el = _find(gear_el, slot_name)
+        parsed = _parse_slot(slot_el)
+        if parsed:
+            gear[slot_name] = parsed
+
+    key_el  = _find(root, "Key")
+    name_el = _find(root, "Name")
+    tone_key  = key_el.text.strip()  if key_el  is not None and key_el.text  else path.stem
+    tone_name = name_el.text.strip() if name_el is not None and name_el.text else tone_key
+
+    return [{"key": tone_key, "name": tone_name, "gear": gear}]
+
+
+def convert_tone_rs2014_xml(tone_path: Path, output_dir: Path):
+    """
+    Convert a .tone2014.xml file to .at5p preset(s).
+    Delegates to convert_tone_rs2014() after parsing the XML.
+    Returns list of output paths written.
+    """
+    tones = _parse_tone2014_xml(tone_path)
+    if not tones:
+        return []
+    out_paths = []
+    for tone in tones:
+        # Reuse the JSON-path converter — same gear dict format
+        # Build a temp structure that _parse_rs2014_json would produce
+        # and call the shared assembly logic directly
+        out_paths.extend(_convert_tone_from_gearlist(
+            tone["key"], tone["name"], tone["gear"], tone_path, output_dir))
+    return out_paths
+
+
+def _parse_rs2014_json(path: Path):
+    """
+    Parse an RS2014 GearList JSON file.  Returns a list of tone dicts,
+    each with keys: key, name, gear (the GearList dict).
+
+    Handles three layouts:
+      A) Single tone: top-level has "GearList" key
+      B) Dict of tones: { tone_key: { "GearList": ... }, ... }
+      C) List of tones: [ { "GearList": ... }, ... ]
+
+    Also tolerates trailing commas (present in some RS2014 JSON exports).
+    """
+    raw = path.read_text(encoding="utf-8")
+    raw = _re.sub(r",\s*([}\]])", r"\1", raw)   # strip trailing commas
+    try:
+        data = json.loads(raw)
+    except Exception as e:
+        print(f"  ERROR reading {path.name}: {e}")
+        return []
+
+    tones = []
+
+    # Format A: single tone
+    if isinstance(data, dict) and "GearList" in data:
+        tones.append({"key": data.get("Key", path.stem),
+                      "name": data.get("Name", data.get("Key", path.stem)),
+                      "gear": data["GearList"]})
+        return tones
+
+    # Format B: dict of tones
+    if isinstance(data, dict):
+        for k, v in data.items():
+            if isinstance(v, dict) and "GearList" in v:
+                tones.append({"key": k,
+                              "name": v.get("Name", k),
+                              "gear": v["GearList"]})
+        if tones:
+            return tones
+
+    # Format C: list of tones
+    if isinstance(data, list):
+        for item in data:
+            if isinstance(item, dict) and "GearList" in item:
+                tones.append({"key": item.get("Key", "unknown"),
+                              "name": item.get("Name", item.get("Key", "unknown")),
+                              "gear": item["GearList"]})
+        if tones:
+            return tones
+
+    print(f"  WARNING: unrecognised RS2014 JSON layout in {path.name}")
+    return []
+
+
+def convert_tone_rs2014(tone_path: Path, output_dir: Path):
+    """
+    Convert one RS2014 GearList JSON file to .at5p preset(s).
+    One file may contain multiple tones (formats B and C above).
+    Returns list of output paths written.
+    """
+    tones = _parse_rs2014_json(tone_path)
+    if not tones:
+        return []
+
+    out_paths = []
+    for tone in tones:
+        out_paths.extend(_convert_tone_from_gearlist(
+            tone["key"], tone["name"], tone["gear"], tone_path, output_dir))
+    return out_paths
+
+
+def _convert_tone_from_gearlist(tone_key: str, tone_name: str, gear: dict,
+                                 source_path: Path, output_dir: Path) -> list:
+    """Shared assembly logic for both JSON and XML RS2014 paths."""
+    warnings  = []
+    out_paths = []
+
+    # ── Amp ──────────────────────────────────────────────────────────────
+    amp_data   = gear.get("Amp", {})
+    rs_amp_key = amp_data.get("Key", "")
+    amp_guid, amp_exact = lookup_amp(rs_amp_key)
+
+    if not amp_guid:
+        warnings.append(f"Unknown amp '{rs_amp_key}' -> using null amp")
+        amp_guid = NULL_GUID
+    elif not amp_exact:
+        warnings.append(f"Fuzzy amp match for '{rs_amp_key}'")
+
+    # RS2014 uses "Knobs" dict (not "KnobValues")
+    knob_values = amp_data.get("Knobs", {})
+    amp_params_parts = []
+    for rs_k, rs_v in knob_values.items():
+        at5_name, at5_val = rs_knob_to_at5(rs_k, rs_v, amp_guid)
+        amp_params_parts.append(f'{at5_name}="{at5_val:.4f}"')
+    amp_params_str = " ".join(amp_params_parts)
+
+    # ── Cabinet ───────────────────────────────────────────────────────────
+    cab_data   = gear.get("Cabinet", {})
+    rs_cab_key = cab_data.get("Key", "")
+    amp_muted  = "0"
+    cab_model, speaker_a = lookup_cab(rs_cab_key)
+    speaker_b  = DEFAULT_SPEAKER_B
+    cab_muted  = "0"
+    if rs_cab_key and rs_cab_key not in CAB_ENCLOSURE_MAP:
+        warnings.append(f"Fuzzy/default cab match for '{rs_cab_key}'")
+
+    # ── Pre-amp stomps (PrePedal1-4 -> StompA1 slots 0-3) ────────────────
+    # RS2014 supports up to 4 pre/post pedals; RS+ only 2 — pass all 4.
+    pre_pedals = [gear.get(f"PrePedal{i}", {}) for i in range(1, 5)]
+    stompa1_attrs, stompa1_slots = build_stomp_section(pre_pedals, n_total=6)
+    for p in pre_pedals:
+        k = p.get("Key", "") if p else ""
+        if k and not lookup_effect(k):
+            warnings.append(f"Unmapped pre-pedal '{k}' -> empty slot")
+
+    # ── Post stomps (PostPedal1-4 -> StompB1 slots 0-3) ──────────────────
+    post_pedals = [gear.get(f"PostPedal{i}", {}) for i in range(1, 5)]
+    stompb1_attrs, stompb1_slots = build_stomp_section(post_pedals, n_total=6)
+    for p in post_pedals:
+        k = p.get("Key", "") if p else ""
+        if k and not lookup_effect(k):
+            warnings.append(f"Unmapped post-pedal '{k}' -> empty slot")
+
+    # ── Rack effects ──────────────────────────────────────────────────────
+    racks = [gear.get(f"Rack{i}", {}) for i in range(1, 5)]
+    racka_attrs, racka_slots = build_rack_section(racks[0:2])
+    rackb_attrs, rackb_slots = build_rack_section(racks[2:4])
+    for r in racks:
+        k = r.get("Key", "") if r else ""
+        if k and not lookup_effect(k):
+            warnings.append(f"Unmapped rack '{k}' -> empty slot")
+
+    # ── Assemble ──────────────────────────────────────────────────────────
+    xml = AT5P_TEMPLATE.format(
+        guid          = str(uuid.uuid4()),
+        amp_guid      = amp_guid,
+        amp_muted     = amp_muted,
+        amp_params    = amp_params_str,
+        null_guid     = NULL_GUID,
+        cab_model     = cab_model,
+        cab_muted     = cab_muted,
+        speaker_a     = speaker_a.replace("-", ""),
+        speaker_b     = speaker_b.replace("-", ""),
+        stompa1_attrs = stompa1_attrs,
+        stompa1_slots = stompa1_slots,
+        stompb1_attrs = stompb1_attrs,
+        stompb1_slots = stompb1_slots,
+        racka_attrs   = racka_attrs,
+        racka_slots   = racka_slots,
+        rackb_attrs   = rackb_attrs,
+        rackb_slots   = rackb_slots,
+        null2_attrs   = null_attrs(2), null2_slots = null_slots(2),
+        null3_attrs   = null_attrs(3), null3_slots = null_slots(3),
+        null4_attrs   = null_attrs(4), null4_slots = null_slots(4),
+        null6_attrs   = null_attrs(6), null6_slots = null_slots(6),
+        description   = tone_key,
+        song          = tone_name,
+    )
+
+    safe_name = "".join(c if c.isalnum() or c in "-_ " else "_" for c in tone_name)
+    out_path  = output_dir / f"{safe_name}.at5p"
+    out_path.write_text(xml, encoding="utf-8")
+
+    status = "OK" if not warnings else f"OK ({len(warnings)} warnings)"
+    print(f"  {source_path.name} [{tone_key}] -> {out_path.name}  [{status}]")
+    for w in warnings:
+        print(f"    ⚠ {w}")
+    out_paths.append(out_path)
+
+    return out_paths
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Convert Rocksmith+ tones to AmpliTube 5 presets")
-    parser.add_argument("inputs", nargs="*", help="tone_*.json files to convert")
-    parser.add_argument("--scan", metavar="DIR", help="Scan directory recursively for tone_*.json")
-    parser.add_argument("--output", "-o", metavar="DIR", default=".", help="Output directory")
+    parser = argparse.ArgumentParser(
+        description="Convert Rocksmith+ or RS2014 PSARC tones to AmpliTube 5 presets",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+RS+ mode (default):   python rs_to_at5.py tone_e5c8db1e.json
+                      python rs_to_at5.py --scan "I:\\Docker\\RocksmithScrape\\Songs" -o Presets\\
+
+RS2014 mode:          python rs_to_at5.py --rs2014 ragekilling_lead.json
+                      python rs_to_at5.py --rs2014 --scan "I:\\Docker\\PSARC\\Extracted" -o Presets\\
+
+RS2014 JSON is extracted from PSARCs via Slopsmith's psarc module:
+  docker exec slopsmith-web-1 python3 -c "
+    from psarc import read_psarc_entries; import json
+    files = read_psarc_entries('/tmp/song.psarc', ['*.json'])
+    for name, data in files.items(): print(name); print(json.dumps(json.loads(data), indent=2))
+  "
+""")
+    parser.add_argument("inputs", nargs="*", help="JSON files to convert")
+    parser.add_argument("--scan", metavar="DIR", help="Scan directory recursively for *.json files")
+    parser.add_argument("--output", "-o", metavar="DIR", default=".", help="Output directory (default: .)")
+    parser.add_argument("--rs2014", action="store_true",
+                        help="Input is RS2014 PSARC GearList JSON format (not RS+ tone_*.json)")
+    parser.add_argument("--rs2014-xml", action="store_true",
+                        help="Input is RS2014 .tone2014.xml format (from PSARC toolkit exports)")
     args = parser.parse_args()
 
     output_dir = Path(args.output)
@@ -787,16 +1658,23 @@ def main():
 
     files = []
     if args.scan:
-        files = list(Path(args.scan).rglob("tone_*.json"))
-        print(f"Found {len(files)} tone files in {args.scan}")
+        files = list(Path(args.scan).rglob("*.json"))
+        print(f"Found {len(files)} JSON files in {args.scan}")
     files += [Path(p) for p in (args.inputs or [])]
 
     if not files:
         parser.print_help()
         return
 
-    converted = sum(1 for f in files if convert_tone(f, output_dir))
-    print(f"\nDone: {converted}/{len(files)} converted -> {output_dir}")
+    if getattr(args, 'rs2014_xml', False):
+        n_out = sum(len(convert_tone_rs2014_xml(f, output_dir)) for f in files)
+        print(f"\nDone: {n_out} preset(s) written -> {output_dir}")
+    elif args.rs2014:
+        n_out = sum(len(convert_tone_rs2014(f, output_dir)) for f in files)
+        print(f"\nDone: {n_out} preset(s) written -> {output_dir}")
+    else:
+        converted = sum(1 for f in files if convert_tone(f, output_dir))
+        print(f"\nDone: {converted}/{len(files)} converted -> {output_dir}")
     print(f"Copy .at5p files to:")
     print(f"  C:\\Users\\<you>\\Documents\\IK Multimedia\\AmpliTube 5\\Presets\\")
 
