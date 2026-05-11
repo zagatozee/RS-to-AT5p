@@ -10,7 +10,7 @@ When you load a song, the plugin reads the tone information from the song file, 
 
 ### Software
 - **Slopsmith** — running in Docker on Windows (this is a plugin for it)
-- **AmpliTube 5** — the IK Multimedia guitar amp simulator (standalone app or VST)
+- **AmpliTube 5 MAX** — the IK Multimedia guitar amp simulator (standalone app or VST)
 - **Python 3.10 or newer** — installed on Windows, not inside Docker
   - Download from https://www.python.org/downloads/
   - During install, tick "Add Python to PATH"
