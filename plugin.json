@@ -3,5 +3,7 @@
   "name": "AmpliTube 5 Tone Switcher",
   "version": "0.1.0",
   "private": false,
-  "script": "screen.js"
+  "nav": { "label": "AT5", "screen": "plugin-at5_tone" },
+  "script": "screen.js",
+  "routes": "routes.py"
 }

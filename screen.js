@@ -296,16 +296,24 @@ async function _at5RequestLiveConvert(filename) {
 }
 
 // ── Scheduler ──────────────────────────────────────────────────────────────
-function _at5StopScheduler() {
+function _at5StopScheduler(sendReset) {
     if (_at5Timer) { clearInterval(_at5Timer); _at5Timer = null; }
     _at5Schedule  = [];
     _at5LastFired = -1;
     _at5LastKey   = null;
     _at5LastT     = null;
+    if (sendReset && _at5MidiBridgeUrl) {
+        fetch(_at5MidiBridgeUrl + '/pc', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ channel: 0, bank_msb: 0, bank_lsb: 0, program: 0 }),
+        }).catch(() => {});
+        console.log('[AT5] Song ended - reset to PC 0');
+    }
 }
 
 async function _at5StartScheduler(filename) {
-    _at5StopScheduler();
+    _at5StopScheduler(false);
     _at5RequestLiveConvert(filename);   // fire & forget — runs in parallel with scheduler startup
     await _at5LoadPcTable();
 
@@ -633,6 +641,17 @@ window._at5Log           = _at5Log;
 window._at5SetPrefire    = (v) => { AT5_PREFIRE_MS = parseFloat(v) || 0; };
 window._at5LiveSlots     = _at5LiveSlots;
 window._at5RequestLiveConvert = _at5RequestLiveConvert;
+
+// Reset AT5 to PC 0 when song stops
+(function() {
+    const origStop = window.highway && window.highway.stop;
+    if (origStop) {
+        window.highway.stop = function() {
+            _at5StopScheduler(true);
+            return origStop.apply(this, arguments);
+        };
+    }
+})();
 
 // Hook showScreen
 (function () {

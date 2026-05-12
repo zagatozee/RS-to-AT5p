@@ -80,11 +80,14 @@ def generate_pc_map(presets_dir, folder, output_path, max_presets=848):
     presets = [p for p in all_presets if LIVE_SLOT_PREFIX not in p.stem]
     live_files = [p for p in all_presets if LIVE_SLOT_PREFIX in p.stem]
 
-    if not presets:
-        print(f"ERROR: No .at5p files found in {target_dir}")
-        sys.exit(1)
+    print(f"Found {len(presets)} user preset(s) and {len(live_files)} live slot file(s) in {target_dir}")
 
-    print(f"Found {len(presets)} presets in {target_dir} (+ {len(live_files)} live slot files)")
+    if not presets:
+        print("Note: No user presets found — only live slots will be mapped.")
+        print("      This is fine for a fresh install. PC 0-119 will be empty;")
+        print("      PC 120-127 will be the live conversion slots.")
+        print("      Add your own .at5p presets to the Converted folder any time")
+        print("      and re-run this script to map them.")
 
     # Cap at LIVE_SLOT_START so live slots never get overwritten
     effective_max = min(max_presets, LIVE_SLOT_START) if max_presets else LIVE_SLOT_START
