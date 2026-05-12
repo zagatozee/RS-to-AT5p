@@ -10,7 +10,7 @@ When you load a song, the plugin reads the tone information from the song file, 
 
 ### Software
 - **Slopsmith** — running in Docker on Windows (this is a plugin for it)
-- **AmpliTube 5 MAX** — the IK Multimedia guitar amp simulator (standalone app or VST)
+- **AmpliTube 5** — the IK Multimedia guitar amp simulator (standalone app or VST)
 - **Python 3.10 or newer** — installed on Windows, not inside Docker
   - Download from https://www.python.org/downloads/
   - During install, tick "Add Python to PATH"
@@ -44,11 +44,13 @@ Find your Slopsmith plugins folder. If you followed the standard Slopsmith Docke
 
 or wherever you put it when setting up Docker. Inside that folder there should already be an `at5_tone` folder. If not, create it.
 
-Copy these files into that `at5_tone` folder, replacing any existing files:
+Copy **all five** of these files into that `at5_tone` folder:
 
+    plugin.json        ← required by Slopsmith to recognise the plugin
     routes.py
     screen.js
-    rs_to_at5.py       ← this is a new file, it won't exist yet
+    rs_to_at5.py       ← new file, add this
+    generate_at5_pc_map.py
 
 Then restart the Slopsmith Docker container so it picks up the changes:
 
@@ -63,7 +65,16 @@ Open your Slopsmith `docker-compose.yml` file in a text editor and find the `vol
 
     - "C:/Users/<yourname>/Documents/IK Multimedia/AmpliTube 5:/at5docs"
 
-Replace `<yourname>` with your actual Windows username. If your AT5 documents are stored somewhere else (OneDrive, a different drive, etc.) adjust the path accordingly — it's wherever AT5 keeps its presets.
+Replace `<yourname>` with your actual Windows username.
+
+> **Finding the right path:** Common locations are:
+>
+>     C:/Users/yourname/Documents/IK Multimedia/AmpliTube 5
+>     C:/Users/yourname/OneDrive/Documents/IK Multimedia/AmpliTube 5
+>
+> Open File Explorer and check which of these exists on your system.
+> If AT5 is synced via OneDrive the path will include OneDrive.
+> You can also check in AmpliTube 5 under Options > General for the user data path.
 
 The full volumes section might look like this when done:
 

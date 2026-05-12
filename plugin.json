@@ -1,0 +1,7 @@
+{
+  "id": "at5_tone",
+  "name": "AmpliTube 5 Tone Switcher",
+  "version": "0.1.0",
+  "private": false,
+  "script": "screen.js"
+}

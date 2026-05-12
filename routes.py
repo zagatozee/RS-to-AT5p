@@ -156,7 +156,7 @@ def _build_sync():
     log.info(f"[AT5] CSV: {len(pc_by_key)} top-128 tones")
 
     if not pc_by_key:
-        log.warning("[AT5] CSV empty or missing — PC table will be empty")
+        log.debug("[AT5] No tone CSV found — PC table empty, live convert will handle switching")
         with _lock:
             _pc_table = {}
             _building = False
@@ -339,16 +339,33 @@ def _load_converter():
 
 
 def _get_presets_dir(at5_dir):
-    """Return Path to the AT5 Converted presets folder."""
+    """Return Path to the AT5 Converted presets folder, creating it if needed."""
+    # Check existing paths first
     for p in [Path("/at5docs/Presets/Converted"), at5_dir / "Presets" / "Converted"]:
         if p.exists():
             return p
-    # Create it if parent exists
-    target = at5_dir / "Presets" / "Converted"
-    if target.parent.exists():
-        target.mkdir(exist_ok=True)
-        return target
-    raise FileNotFoundError(f"AT5 Presets/Converted not found (tried /at5docs and {at5_dir})")
+
+    # /at5docs is mounted but Presets/Converted doesn't exist yet — create it
+    at5docs = Path("/at5docs")
+    if at5docs.exists():
+        converted = at5docs / "Presets" / "Converted"
+        converted.mkdir(parents=True, exist_ok=True)
+        log.info(f"[AT5 Live] Created {converted}")
+        return converted
+
+    # at5_dir exists (from config) but no Converted folder — create it
+    if at5_dir.exists():
+        converted = at5_dir / "Presets" / "Converted"
+        converted.mkdir(parents=True, exist_ok=True)
+        log.info(f"[AT5 Live] Created {converted}")
+        return converted
+
+    raise FileNotFoundError(
+        "Could not find or create AT5 Presets folder. "
+        "Add a volume mount to docker-compose.yml: "
+        '"C:/Users/<username>/Documents/IK Multimedia/AmpliTube 5:/at5docs" '
+        "(adjust path to match your system)"
+    )
 
 
 def _ensure_slot_files(presets_dir):
