@@ -1,10 +1,14 @@
 # Slopsmith AT5 Tone Switcher — Technical Handoff
 *May 2026*
 
+---
+
 ## Status
 
 Working end-to-end. Live convert confirmed on CDLC songs. CC knob adjustments
 confirmed firing. AT5 switching presets in response to MIDI PC messages.
+Song-local preset store implemented (presets seed to `at5/` folder beside each PSARC).
+Save-back endpoint implemented (user AT5 edits persist back to song folder).
 
 ---
 
@@ -15,11 +19,13 @@ Slopsmith (Docker)
   → playSong hook (screen.js)
   → _at5RequestLiveConvert()
       → POST /api/plugins/at5_tone/live_convert
-      → rs_to_at5.py converter
+          1. Check <song_dir>/at5/<tone_key>.at5p  (song-local, user-edited)
+          2. Fallback: extract PSARC → rs_to_at5.py → write to live slots
+          3. Seed newly converted presets back to song-local folder
       → writes AT5_LIVE_00..07.at5p to AT5 Presets/Converted/
   → _at5StartScheduler()
       → highway.getToneChanges() [CDLC]
-        OR XML parse [songs with explicit tone schedule]
+        OR XML parse [RS+ scrape songs]
       → setInterval 100ms polling highway.getTime()
       → _at5Lookup(): live slots first, PC table fallback
       → HTTP POST → at5_midi_bridge.py (localhost:37432)
@@ -28,51 +34,71 @@ Slopsmith (Docker)
 
 ---
 
-## Plugin Files
+## Song-Local Preset Store
 
-### screen.js — key behaviours
+On first load of a PSARC, tones are live-converted and seeded to:
+```
+<psarc_dir>/<psarc_stem>/at5/<tone_key>.at5p
+```
 
-- `_at5RequestLiveConvert(filename)`: fires immediately on song load, parallel to scheduler
-  - URL-decodes filename before sending to backend
-  - Clears stale live slots from previous song before converting (mutates in-place — IIFE scope)
-  - On success: populates `_at5LiveSlots` = { toneKey: pcNumber, ... }
-- `_at5StartScheduler(filename)`: 800ms delay, retries `highway.getToneChanges()` up to 5x at 400ms intervals
-  - If highway returns data: uses it as tone schedule, enriches unmapped tones via CDLC fallback endpoint
-  - If no highway data: tries XML schedule parse, then falls back to first live slot as base tone at t=0
-- `_at5Lookup(toneKey)`: checks `_at5LiveSlots` first, then `_at5PcTable`
-- Three-tab UI: Status | Tone Browser | Live Log
+On subsequent loads, these files are copied directly to live slots (~1ms, no extraction).
 
-### routes.py — key behaviours
+After dialling in a tone in AT5, click "Save current presets back to song" in the
+Status tab — copies the current live slot file back to the song-local folder,
+overwriting the auto-converted version. Those edits then load automatically every time.
 
-- On startup: creates `AT5_LIVE_00..07.at5p` using the real `AT5P_TEMPLATE` from rs_to_at5
-  (important — hand-rolled XML causes AT5 to crash on startup)
-- `POST /live_convert`: locates PSARC via `context["get_dlc_dir"]()`, extracts tones via
-  Slopsmith's `read_psarc_entries()`, converts via `rs_to_at5._convert_tone_from_gearlist()`,
-  writes to slot files, returns `{"slots": {"ToneKey": 120, ...}}`
-- PC table (optional): if `/scrape` is mounted and a CSV is present, builds a frequency-sorted
-  table of pre-converted tones as fallback for songs not covered by live convert
-- CC adjustments: when two tones share the same signal chain but differ in knob values,
-  fires CC messages after the PC to adjust individual parameters
-
-### rs_to_at5.py — key facts
-
-- Must be in the plugin folder — routes.py imports it at runtime
-- `_convert_tone_from_gearlist(tone_key, tone_name, gear, source_path, output_dir)`:
-  the shared assembly function used by both live convert and CLI batch mode
-- Supports RS+ JSON, RS2014 GearList JSON, and RS2014 `.tone2014.xml` formats
-- 42 amps, 68 pedals, 17 rack effects mapped to AT5 GUIDs
-- Knob values: Rocksmith 0-100 scale → AT5 0-10 (divide by 10)
-- Amp knob param names include per-amp suffix (e.g. `Gain_JCM800AT4`) sourced from
-  AT5 factory presets
+Sloppak layout: `<sloppak_stem>/at5/` beside the `.sloppak` file.
+Loose folder layout: `at5/` inside the loose folder.
+(Sloppak/loose extraction not yet implemented — PSARC only for now.)
 
 ---
 
-## Live Convert — Confirmed Results
+## Prescan (batch pre-conversion)
 
-- KITN (RATM): 4 tones, JCM800 amp correct, knob values correct
-- Tone switching firing at correct timestamps from `highway.getToneChanges()`
-- AT5 confirmed re-reading `.at5p` files from disk on every PC trigger — no restart needed
-- Typical conversion time: 30-100ms for 2-6 tones
+```
+POST /api/plugins/at5_tone/prescan          -- all PSARCs in DLC folder
+POST /api/plugins/at5_tone/prescan  {"filenames": ["song.psarc"]}
+GET  /api/plugins/at5_tone/prescan/status?job_id=<id>
+```
+
+Runs in background thread. Skips songs that already have a complete `at5/` folder.
+
+---
+
+## Plugin Files
+
+### screen.js
+- `_at5RequestLiveConvert(filename)`: fires on song load, checks song-local first
+- `_at5SaveBack(toneKey)`: saves dialled-in AT5 preset back to song folder
+- `_at5StartScheduler(filename)`: retries highway.getToneChanges() up to 5x
+- `_at5Lookup(toneKey)`: live slots first, then PC table
+- Reset to PC 0 on song end (only if a tone was actually fired this session)
+
+### routes.py
+- `POST /live_convert`: song-local check → live convert → seed back
+- `POST /preset/save-back`: copy live slot → song-local store
+- `POST /prescan`: batch pre-convert all PSARCs (background thread)
+- `GET /prescan/status`: progress polling
+- `GET /live_status`: current slot assignments and source (song-local vs live-convert)
+- On startup: creates AT5_LIVE_00..07.at5p using real AT5P_TEMPLATE (not hand-rolled XML)
+
+### rs_to_at5.py
+- Must be in the plugin folder — routes.py imports it at runtime
+- Supports RS+ JSON, RS2014 GearList JSON, RS2014 `.tone2014.xml`
+- `_convert_tone_from_gearlist()`: shared assembly used by both CLI and live convert
+- DI tones: `DIBeforeAmp="1"`, amp muted, cab unmuted — correct AT5 routing
+- 42 amps, 68 pedals, 17 rack effects mapped; 0 misses on 179 RS2014 official tones
+
+---
+
+## rs_to_at5.py Changes (this week)
+
+- `--rs2014-xml` flag: parse `.tone2014.xml` (WCF format from PSARC toolkit)
+- Added `Amp_BT15`, `Amp_GB38`, `DI_Amp_BassDriver` to AMP_MAP
+- Added 20 missing RS2014 cab variants (Ribbon/Condenser/OffAxis mic positions)
+- Added `Pedal_DigitalVerb`, `Pedal_Limiter` to EFFECT_MAP
+- Fixed DI tone routing: `DIBeforeAmp="1"` + cab unmuted (was silencing presets)
+- Refactored shared preset assembly into `_convert_tone_from_gearlist()`
 
 ---
 
@@ -102,28 +128,23 @@ LIVE_SLOT_COUNT  = 8
 LIVE_SLOT_PREFIX = "AT5_LIVE"
 ```
 
-PC map is written by `generate_at5_pc_map.py`. Re-run it if slot count changes.
-
 ---
 
 ## Known Issues / To Do
 
 1. **Wharmonator CC** — MIDI Learn in AT5, then set in `KNOB_CC_MAP` in routes.py
-2. **>8 tones per song** — first 8 converted exactly, remainder get no live slot;
-   expand `LIVE_SLOT_COUNT` if needed
-3. **3dhighway plugin** — bare `catch {}` syntax bug aborts plugin load loop if enabled;
-   rename to `3dhighway_disabled` to work around
-4. **Badge position** — appears after Close button instead of before it
-5. **Opening AT5 screen stops song** — Slopsmith core `showScreen()` calls `highway.stop()`;
-   unfixable from a plugin
-6. **Settings endpoint** — `GET /api/plugins/at5_tone/settings` not yet implemented
+2. **Sloppak/loose folder** — song-local preset store not yet wired for these formats
+3. **Settings panel prescan UI** — endpoint exists, no UI yet
+4. **AT5 screen display** — screen.html renders but may need further layout debugging
+   depending on Slopsmith version (confirmed working on 0.2.8-prerelease)
+5. **3dhighway plugin** — bare `catch {}` syntax bug; rename to `3dhighway_disabled`
+6. **Opening AT5 screen stops song** — Slopsmith core behaviour, unfixable from plugin
 
 ---
 
 ## Slopsmith Plugin API Reference
 
 ```javascript
-// highway object
 highway.getTime()           // audio-aligned time in seconds
 highway.getToneChanges()    // [{t, name}] — CDLC songs only
 highway.getToneBase()       // initial tone key string
@@ -140,4 +161,5 @@ context["config_dir"]       // Path to plugin config directory
 ### Key behaviours
 - `showScreen(id)` stops audio if id !== 'player' — unavoidable from plugins
 - `window.playSong` is safe to monkey-patch
-- `window.slopsmith.on('arrangement:changed', cb)` fires with `{index, filename}`
+- Plugin screen loaded from `screen.html` — must exist for nav entry to work
+- `plugin.json` must include `"routes": "routes.py"` for backend to load

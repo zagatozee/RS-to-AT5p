@@ -305,12 +305,18 @@ LIVE_SLOT_START  = 120
 LIVE_SLOT_COUNT  = 8
 LIVE_SLOT_PREFIX = "AT5_LIVE"
 
+# Setting: limit amp selection to AT5 CS free version models only
+_at5_free_mode = False
+
 _live_state = {
     "song":       None,
     "slots":      {},   # tone_key -> pc_number
     "warnings":   [],
     "elapsed_ms": 0,
+    "source":     None,
 }
+
+_prescan_state = {}   # job_id -> progress dict
 
 _rs_to_at5_mod = None   # cached module reference
 
@@ -488,24 +494,27 @@ def _extract_psarc_tones(psarc_path):
     return tones
 
 
-def _write_live_slots(tones, presets_dir):
+def _write_live_slots(tones, presets_dir, slot_offset=0):
     """Convert tones and overwrite live slot .at5p files.
+    slot_offset: start writing at this slot index (for partial updates).
     Returns (slot_map, warnings): slot_map = {tone_key: pc_number}
     """
     mod = _load_converter()
-    items    = list(tones.items())[:LIVE_SLOT_COUNT]
+    available = LIVE_SLOT_COUNT - slot_offset
+    items    = list(tones.items())[:available]
     slot_map = {}
     warnings = []
 
-    if len(tones) > LIVE_SLOT_COUNT:
+    if len(tones) > available:
         warnings.append(
-            f"Song has {len(tones)} tones but only {LIVE_SLOT_COUNT} live slots — "
-            f"first {LIVE_SLOT_COUNT} converted, rest fall back to PC table."
+            f"{len(tones)} tones but only {available} live slot(s) remaining — "
+            f"first {available} converted, rest fall back to PC table."
         )
 
     for i, (tone_key, tone_data) in enumerate(items):
-        pc_num    = LIVE_SLOT_START + i
-        slot_path = presets_dir / f"{LIVE_SLOT_PREFIX}_{i:02d}.at5p"
+        slot_idx  = slot_offset + i
+        pc_num    = LIVE_SLOT_START + slot_idx
+        slot_path = presets_dir / f"{LIVE_SLOT_PREFIX}_{slot_idx:02d}.at5p"
         try:
             # _convert_tone_from_gearlist writes <safe_name>.at5p to output_dir.
             # We want the file at the exact slot path, so write to a temp dir then rename.
@@ -518,6 +527,7 @@ def _write_live_slots(tones, presets_dir):
                     tone_data["GearList"],
                     slot_path,   # source_path (logging only)
                     tmp_path,    # output_dir
+                    free_mode=_at5_free_mode,
                 )
                 written = list(tmp_path.glob("*.at5p"))
                 if written:
@@ -532,6 +542,82 @@ def _write_live_slots(tones, presets_dir):
             log.error(f"[AT5 Live] {tone_key} error: {e}", exc_info=True)
 
     return slot_map, warnings
+
+
+
+# ── Song-local preset store ────────────────────────────────────────────────
+# Each PSARC/sloppak/loose folder can carry its own .at5p preset files.
+# On song load the plugin checks here first; live-convert is the fallback.
+# File naming: <tone_key>.at5p inside an "at5" subfolder next to the song.
+#
+# Priority order on load:
+#   1. <song_dir>/at5/<tone_key>.at5p  (user-edited, song-local)
+#   2. Live convert from PSARC          (auto-generated, written back to #1)
+#
+# "Save back" copies the current live slot file → song-local store so
+# user edits made in AT5 persist across sessions.
+
+
+def _song_preset_dir(psarc_path: Path) -> Path:
+    """Return the at5/ subfolder next to the PSARC for song-local presets."""
+    return psarc_path.parent / "at5"
+
+
+def _load_song_presets(psarc_path: Path) -> dict:
+    """
+    Return dict of { tone_key: Path } for any .at5p files already stored
+    next to this PSARC.  Returns empty dict if folder doesn't exist yet.
+    """
+    d = _song_preset_dir(psarc_path)
+    if not d.exists():
+        return {}
+    return {p.stem: p for p in d.glob("*.at5p")}
+
+
+def _seed_song_presets(psarc_path: Path, slot_map: dict,
+                        presets_dir: Path) -> dict:
+    """
+    After live-convert, copy the generated live slot files into the
+    song-local at5/ folder so they persist and can be user-edited.
+    Returns { tone_key: dest_path } for files written.
+    Skips any tone that already has a file (preserves user edits).
+    """
+    song_dir = _song_preset_dir(psarc_path)
+    song_dir.mkdir(exist_ok=True)
+    seeded = {}
+    for tone_key, pc_num in slot_map.items():
+        dest = song_dir / f"{tone_key}.at5p"
+        if dest.exists():
+            continue                        # never overwrite user-edited file
+        slot_idx = pc_num - LIVE_SLOT_START
+        slot_file = presets_dir / f"{LIVE_SLOT_PREFIX}_{slot_idx:02d}.at5p"
+        if slot_file.exists():
+            import shutil
+            shutil.copy2(slot_file, dest)
+            seeded[tone_key] = str(dest)
+    if seeded:
+        log.info(f"[AT5 Live] Seeded {len(seeded)} preset(s) -> {song_dir}")
+    return seeded
+
+
+def _copy_song_presets_to_slots(song_presets: dict, slot_map_order: list,
+                                 presets_dir: Path) -> dict:
+    """
+    Copy song-local .at5p files into live slots, maintaining order.
+    slot_map_order: list of tone_keys in slot order (slot 0, 1, 2 …)
+    Returns { tone_key: pc_number } slot map.
+    """
+    import shutil
+    result = {}
+    for i, tone_key in enumerate(slot_map_order[:LIVE_SLOT_COUNT]):
+        if tone_key not in song_presets:
+            continue
+        pc_num    = LIVE_SLOT_START + i
+        slot_file = presets_dir / f"{LIVE_SLOT_PREFIX}_{i:02d}.at5p"
+        shutil.copy2(song_presets[tone_key], slot_file)
+        result[tone_key] = pc_num
+        log.info(f"[AT5 Live] Slot {i} PC{pc_num}: {tone_key} <- song-local preset")
+    return result
 
 # ── Plugin setup ───────────────────────────────────────────────────────────
 
@@ -604,34 +690,97 @@ def setup(app, context):
         if not psarc_path:
             return {"status": "error", "message": f"PSARC not found: {filename}"}
 
-        try:
-            tones = _extract_psarc_tones(psarc_path)
-        except ImportError:
-            return {"status": "error", "message": "psarc module unavailable — must run inside Slopsmith container"}
-        except Exception as e:
-            return {"status": "error", "message": f"Extraction failed: {e}"}
+        # ── Step 1: check song-local preset store ─────────────────────────
+        song_presets = _load_song_presets(psarc_path)
+        if song_presets:
+            # We have song-local presets — extract tone order from PSARC
+            # so we can copy them into slots in the right order
+            try:
+                tones = _extract_psarc_tones(psarc_path)
+            except Exception:
+                tones = {}
+            tone_order = list(tones.keys()) if tones else list(song_presets.keys())
 
-        if not tones:
-            return {"status": "error", "message": f"No tones found in {filename}"}
+            # Use song-local files for tones we have, live-convert for the rest
+            missing = [k for k in tone_order if k not in song_presets]
+            slot_map = _copy_song_presets_to_slots(
+                song_presets, tone_order, _live_presets_dir)
+            warnings = []
+            source = "song-local"
 
-        slot_map, warnings = _write_live_slots(tones, _live_presets_dir)
-        elapsed = int((_time.time() - t0) * 1000)
+            if missing and tones:
+                # Convert and slot the missing tones
+                missing_tones = {k: tones[k] for k in missing if k in tones}
+                if missing_tones:
+                    # Write into slots after the song-local ones
+                    next_slot = len(slot_map)
+                    extra_map, extra_warn = _write_live_slots(
+                        missing_tones, _live_presets_dir,
+                        slot_offset=next_slot)
+                    slot_map.update(extra_map)
+                    warnings.extend(extra_warn)
+                    # Seed the newly converted ones back to song folder
+                    _seed_song_presets(psarc_path, extra_map, _live_presets_dir)
+
+            elapsed = int((_time.time() - t0) * 1000)
+            log.info(f"[AT5 Live] {filename}: {len(slot_map)} tones from {source} in {elapsed}ms")
+
+        else:
+            # ── Step 2: no song-local presets — live convert ───────────────
+            try:
+                tones = _extract_psarc_tones(psarc_path)
+            except ImportError:
+                return {"status": "error", "message": "psarc module unavailable — must run inside Slopsmith container"}
+            except Exception as e:
+                return {"status": "error", "message": f"Extraction failed: {e}"}
+
+            if not tones:
+                return {"status": "error", "message": f"No tones found in {filename}"}
+
+            slot_map, warnings = _write_live_slots(tones, _live_presets_dir)
+            source = "live-convert"
+            elapsed = int((_time.time() - t0) * 1000)
+
+            # Seed converted presets into song folder for future use / user editing
+            _seed_song_presets(psarc_path, slot_map, _live_presets_dir)
+            log.info(f"[AT5 Live] {filename}: {len(slot_map)} tones {source} in {elapsed}ms")
 
         _live_state.update({
             "song":       filename,
             "slots":      slot_map,
             "warnings":   warnings,
             "elapsed_ms": elapsed,
+            "source":     source,
         })
 
-        log.info(f"[AT5 Live] {filename}: {len(slot_map)} tones in {elapsed}ms")
         return {
-            "status":     "ok",
-            "slots":      slot_map,
-            "warnings":   warnings,
-            "elapsed_ms": elapsed,
-            "total_tones": len(tones),
+            "status":      "ok",
+            "slots":       slot_map,
+            "warnings":    warnings,
+            "elapsed_ms":  elapsed,
+            "source":      source,
+            "song_presets": list(song_presets.keys()),
         }
+
+    @app.get("/api/plugins/at5_tone/settings")
+    def get_settings():
+        return {
+            "free_mode": _at5_free_mode,
+            "free_mode_amps": list(mod.AT5_CS_AMP_GUIDS.keys()) if hasattr(mod, "AT5_CS_AMP_GUIDS") else [],
+        }
+
+    @app.post("/api/plugins/at5_tone/settings")
+    async def update_settings(request: Request):
+        global _at5_free_mode
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        if "free_mode" in body:
+            _at5_free_mode = bool(body["free_mode"])
+            log.info(f"[AT5] free_mode set to {_at5_free_mode}")
+            _live_state.update({"song": None, "slots": {}, "warnings": [], "elapsed_ms": 0})
+        return {"status": "ok", "free_mode": _at5_free_mode}
 
     @app.get("/api/plugins/at5_tone/live_status")
     def live_status():
@@ -641,6 +790,155 @@ def setup(app, context):
             "slot_count":  LIVE_SLOT_COUNT,
             "presets_dir": str(_live_presets_dir) if _live_presets_dir else None,
         }
+
+    @app.post("/api/plugins/at5_tone/preset/save-back")
+    async def preset_save_back(request: Request):
+        """
+        Copy the current live slot file(s) back to the song-local at5/ folder,
+        overwriting any existing file.  Call this after the user has dialled in
+        a tone in AT5 and wants to save it permanently with the song.
+
+        Body: { "tone_key": "RageKilling_lead" }   -- save one tone
+              { "tone_key": "*" }                   -- save all current slots
+        """
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+
+        if not _live_state.get("song"):
+            return {"status": "error", "message": "No song loaded"}
+
+        dlc_dir = context.get("get_dlc_dir", lambda: None)()
+        if not dlc_dir:
+            return {"status": "error", "message": "DLC dir unavailable"}
+
+        filename   = _live_state["song"]
+        psarc_path = (Path(dlc_dir) / filename).resolve()
+        if not psarc_path.exists():
+            return {"status": "error", "message": f"PSARC not found: {filename}"}
+
+        song_dir = _song_preset_dir(psarc_path)
+        song_dir.mkdir(exist_ok=True)
+
+        tone_key   = body.get("tone_key", "*")
+        slots      = _live_state.get("slots", {})
+        to_save    = slots if tone_key == "*" else {tone_key: slots[tone_key]} if tone_key in slots else {}
+
+        if not to_save:
+            return {"status": "error", "message": f"Tone key '{tone_key}' not in current slots"}
+
+        import shutil
+        saved = []
+        for tk, pc_num in to_save.items():
+            slot_idx  = pc_num - LIVE_SLOT_START
+            slot_file = _live_presets_dir / f"{LIVE_SLOT_PREFIX}_{slot_idx:02d}.at5p"
+            if not slot_file.exists():
+                continue
+            dest = song_dir / f"{tk}.at5p"
+            shutil.copy2(slot_file, dest)
+            saved.append(tk)
+            log.info(f"[AT5 Live] Saved back: {tk} -> {dest}")
+
+        return {
+            "status": "ok",
+            "saved":  saved,
+            "song_dir": str(song_dir),
+        }
+
+    @app.post("/api/plugins/at5_tone/prescan")
+    async def prescan(request: Request):
+        """
+        Batch-convert tones for a list of PSARCs (or all PSARCs in the DLC dir).
+        Seeds .at5p files into each song's at5/ subfolder.
+        Skips songs that already have a complete set.
+
+        Body: { "filenames": ["song1.psarc", ...] }  -- specific files
+              {}                                      -- all PSARCs in DLC dir
+
+        Returns immediately with a job ID; conversion runs in background.
+        Poll GET /api/plugins/at5_tone/prescan/status for progress.
+        """
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+
+        dlc_dir = context.get("get_dlc_dir", lambda: None)()
+        if not dlc_dir:
+            return {"status": "error", "message": "DLC dir unavailable"}
+
+        dlc_path = Path(dlc_dir)
+        filenames = body.get("filenames")
+        if filenames:
+            psarcs = [dlc_path / f for f in filenames]
+        else:
+            psarcs = list(dlc_path.rglob("*.psarc"))
+
+        if not psarcs:
+            return {"status": "error", "message": "No PSARCs found"}
+
+        # Run in background thread so request returns immediately
+        import threading
+        job_id = str(_uuid.uuid4())[:8]
+        _prescan_state[job_id] = {
+            "total": len(psarcs), "done": 0, "skipped": 0,
+            "errors": 0, "running": True, "job_id": job_id,
+        }
+
+        def _run():
+            state = _prescan_state[job_id]
+            for psarc_path in psarcs:
+                if not psarc_path.exists():
+                    state["errors"] += 1
+                    state["done"]   += 1
+                    continue
+                try:
+                    existing = _load_song_presets(psarc_path)
+                    tones    = _extract_psarc_tones(psarc_path)
+                    missing  = [k for k in tones if k not in existing]
+                    if not missing:
+                        state["skipped"] += 1
+                        state["done"]    += 1
+                        continue
+                    # Convert missing tones to a temp dir, seed to song folder
+                    import tempfile, shutil
+                    with tempfile.TemporaryDirectory() as tmp:
+                        tmp_path = Path(tmp)
+                        mod = _load_converter()
+                        slot_map = {}
+                        for i, tk in enumerate(missing[:LIVE_SLOT_COUNT]):
+                            td = tones[tk]
+                            results = mod._convert_tone_from_gearlist(
+                                tk, td.get("Name", tk), td["GearList"],
+                                psarc_path, tmp_path)
+                            written = list(tmp_path.glob("*.at5p"))
+                            if written:
+                                slot_map[tk] = LIVE_SLOT_START + i
+                                dest = _song_preset_dir(psarc_path) / f"{tk}.at5p"
+                                _song_preset_dir(psarc_path).mkdir(exist_ok=True)
+                                if not dest.exists():
+                                    shutil.copy2(written[0], dest)
+                                for f in tmp_path.glob("*.at5p"):
+                                    f.unlink()
+                except Exception as e:
+                    log.error(f"[AT5 Prescan] {psarc_path.name}: {e}")
+                    state["errors"] += 1
+                state["done"] += 1
+            state["running"] = False
+            log.info(f"[AT5 Prescan] Job {job_id} done: "
+                     f"{state['done']} processed, {state['skipped']} skipped, "
+                     f"{state['errors']} errors")
+
+        threading.Thread(target=_run, daemon=True).start()
+        return {"status": "ok", "job_id": job_id, "total": len(psarcs)}
+
+    @app.get("/api/plugins/at5_tone/prescan/status")
+    def prescan_status(job_id: str = ""):
+        if job_id and job_id in _prescan_state:
+            return _prescan_state[job_id]
+        # Return all jobs if no specific id
+        return list(_prescan_state.values())
 
     # ── Endpoints ──────────────────────────────────────────────────────────
 

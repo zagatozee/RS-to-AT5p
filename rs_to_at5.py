@@ -1015,6 +1015,177 @@ KNOB_NAME_MAP = {
 
 
 # Amp keys that are direct-inject / no cabinet
+# ── AT5 CS (free version) gear constraints ────────────────────────────────
+# AT5 CS includes exactly: 6 amps, 7 cabs, 10 stomps, 6 rack effects.
+# When free_mode=True, all gear maps to the closest CS equivalent.
+# Unmappable effects (pitch shifters, ring mod, bit crusher etc.) are dropped.
+
+# Correct AT5 CS amps (from official gear list PDF):
+AT5_CS_AMP_GUIDS = {
+    "Brit 8000":              "8fe96936-5178-4950-9b80-d89c32534bad",  # Marshall JCM800
+    "American Tube Clean 1":  "71a76a9f-cf70-4f59-971f-9864a055523c",  # Fender-style clean
+    "American Tube Clean 2":  "82972243-cd55-4b43-82f3-f15e3bc13dc7",  # Fender-style clean 2
+    "British Tube Lead 1":    "fb5fc82f-a926-4591-87d2-168906fd79d3",  # Marshall-style lead
+    "SLD 100":                "4a22ac9f-aabb-4180-b697-5d5710a1acc2",  # Soldano SLO-100
+    "Solid State Bass Preamp":"ad4ea282-ced9-49d0-9670-e9782ce5c5b7",  # Bass only
+}
+
+# CS cabs — closest available GUID for each CS cabinet type
+AT5_CS_CAB_GUIDS = {
+    "1x12 Open Vintage":   "bcec521d-c918-4af6-98be-b50b644ac3dd",  # exact match
+    "1x15 Bass Vintage":   "0c2f1129-e09d-4510-9624-7c8b05f188cf",  # 1x15 OBC 115
+    "2x12 Closed Vintage": "f7902634-12e9-4a2d-9f9a-bcd22781cdab",  # 2x12 JP Jazz
+    "4x10 Open Vintage":   "4614704e-7ca2-4736-a750-648fe9033650",  # 4x10 Bassman
+    "4x12 Brit 8000":      "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",  # exact match
+    "4x12 Closed Vintage": "c97bc69c-c02d-4cce-b19d-859b72833550",  # 4x12 1960AV
+    "4x12 Metal T":        "849b3340-5c3b-4395-9e28-ef6dc14f6847",  # Recto Traditional Slant
+}
+
+# CS stomps — RS pedal key → closest CS stomp GUID
+AT5_CS_STOMP_MAP = {
+    # Distortion/overdrive → Diode Overdrive (Boss SD-1 style)
+    "overdrive":   "fd627f5e-8e89-4a37-8dd8-40bf43e78c6b",
+    # Chorus → Chorus
+    "chorus":      "bc6a9f33-ee8a-4a8b-9a2c-3d4e5f6a7b8c",
+    # Compressor → Compressor
+    "compress":    "5478981b-b18a-469f-81e7-a3e228cc9d50",
+    # Delay → Delay
+    "delay":       "e11b1dc5-a1b2-4c3d-8e4f-5a6b7c8d9e0f",
+    # Flanger → Flanger
+    "flanger":     "7ccf016f-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+    # Noise gate → Noise Gate
+    "gate":        "0455f997-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
+    "noisegate":   "0455f997-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
+    # Tremolo → Opto Tremolo
+    "trem":        "50378f09-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
+    # Wah → Wah
+    "wah":         "6482748e-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
+    # Reverb → Digital Reverb (rack)
+    "reverb":      "59ab0817-b168-4bdc-b837-e3cba1efb2dd",
+    "verb":        "59ab0817-b168-4bdc-b837-e3cba1efb2dd",
+    # EQ → Graphic EQ
+    "eq":          "8d7ff76e-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
+}
+
+# CS fallback preset — used when no reasonable CS equivalent exists
+# (pitch shifters, ring mod, octave, bit crusher, acoustic emulator, etc.)
+# This is intentionally a null/bypass — better than a wrong effect.
+AT5_CS_NULL_EFFECT = None   # slot left empty
+
+
+def _amp_to_cs_guid(rs_amp_key: str) -> str:
+    """Map any RS amp key to the closest AT5 CS amp GUID."""
+    k = rs_amp_key.upper()
+    # Bass → Solid State Bass Preamp
+    if any(x in k for x in ['BASS','BT15','BT30']):
+        return AT5_CS_AMP_GUIDS["Solid State Bass Preamp"]
+    # High-gain British (Marshall JCM/DSL/JVM, Orange high-gain) → Brit 8000
+    if any(x in k for x in ['BT100','BT45','GB100','GB50','GB38',
+                              'MARSHALLJCM','MARSHALLDSL','MARSHALLJVM',
+                              'MARSHALLJMP','MARSHALLPLEXI','MARSHALLMAJOR',
+                              'MARSHALLSLASH','EN50','EN30','ORANGE']):
+        return AT5_CS_AMP_GUIDS["Brit 8000"]
+    # Clean British (JTM45, Bluesbreaker, Silver Jubilee) → British Tube Lead 1
+    if any(x in k for x in ['TW22','TW26','TW40','MARSHALLJTM','MARSHALLBLUES',
+                              'MARSHALLSILVER']):
+        return AT5_CS_AMP_GUIDS["British Tube Lead 1"]
+    # High-gain American (Mesa Rectifier, Peavey, Soldano) → SLD 100
+    if any(x in k for x in ['HG100','HG180','HG500','CA85','CA100',
+                              'MESALEAD','MESARECT','MESATRIPL','MESAMODERN']):
+        return AT5_CS_AMP_GUIDS["SLD 100"]
+    # Clean American (Fender, Roland JC) → American Tube Clean 1
+    if any(x in k for x in ['AT120','AT20','CS90','CS100','CS120',
+                              'TW40','MESACLEAN','TUBECLEAN','FENDER']):
+        return AT5_CS_AMP_GUIDS["American Tube Clean 1"]
+    # Mid-clean American (Mesa Mark III clean) → American Tube Clean 2
+    if any(x in k for x in ['CA38','CA85']):
+        return AT5_CS_AMP_GUIDS["American Tube Clean 2"]
+    # Default fallback: Brit 8000
+    return AT5_CS_AMP_GUIDS["Brit 8000"]
+
+
+def _cab_to_cs_guid(rs_cab_key: str) -> str:
+    """Map any RS cab key to the closest AT5 CS cabinet GUID."""
+    k = rs_cab_key.upper()
+    # Bass cabs → 1x15 Bass Vintage
+    if 'BASS' in k or '115' in k:
+        return AT5_CS_CAB_GUIDS["1x15 Bass Vintage"]
+    # Small/single speaker → 1x12 Open Vintage
+    if any(x in k for x in ['112','1X12','TW112','CA112','CS1120']):
+        return AT5_CS_CAB_GUIDS["1x12 Open Vintage"]
+    # 2x12 → 2x12 Closed Vintage
+    if any(x in k for x in ['212','2X12']):
+        return AT5_CS_CAB_GUIDS["2x12 Closed Vintage"]
+    # 4x10 → 4x10 Open Vintage
+    if any(x in k for x in ['410','4X10']):
+        return AT5_CS_CAB_GUIDS["4x10 Open Vintage"]
+    # High-gain / metal 4x12 → 4x12 Metal T
+    if any(x in k for x in ['HG','RECTO','MESA','METAL']):
+        return AT5_CS_CAB_GUIDS["4x12 Metal T"]
+    # British 4x12 → 4x12 Brit 8000
+    if any(x in k for x in ['BT','GB','MARSHALL','BRIT','1960']):
+        return AT5_CS_CAB_GUIDS["4x12 Brit 8000"]
+    # Default: 4x12 Closed Vintage
+    return AT5_CS_CAB_GUIDS["4x12 Closed Vintage"]
+
+
+def _effect_to_cs_guid(rs_effect_key: str) -> str | None:
+    """
+    Map an RS effect key to the closest AT5 CS stomp/rack GUID.
+    Returns None if no reasonable CS equivalent exists (effect slot dropped).
+    CS has: Chorus, Compressor, Delay, Diode Overdrive, Flanger,
+            Noise Gate, Opto Tremolo, Volume, Wah,
+            Digital Chorus, Digital Delay, Digital Reverb,
+            Graphic EQ, Parametric EQ 3, Tube Compressor
+    No equivalent for: pitch shift, octave, ring mod, bit crush,
+                       acoustic emulator, bass emulator, vibe, phaser,
+                       flanger (some variants)
+    """
+    k = rs_effect_key.upper()
+    # Drop: pitch/octave/whammy, ring mod, bit crusher, acoustic/bass emulator
+    if any(x in k for x in ['PITCH','OCTAVE','WHAMM','RING','BIT','CRUNCHER',
+                              'ACOUSTIC','BASSEMU','LOFI','SYNTH','BAKED',
+                              'ENBIGGEN','CLONE','ROTATO','VIBE','ROTA']):
+        return AT5_CS_NULL_EFFECT
+    # Wah variants → Wah
+    if any(x in k for x in ['WAH','FILTER','AUTOWAH','BOBFILTER']):
+        return AT5_CS_STOMP_MAP["wah"]
+    # Reverb variants → Digital Reverb
+    if any(x in k for x in ['REVERB','VERB','SPRING','PLATE','CHAMBER']):
+        return AT5_CS_STOMP_MAP["reverb"]
+    # Delay variants → Delay
+    if any(x in k for x in ['DELAY','ECHO']):
+        return AT5_CS_STOMP_MAP["delay"]
+    # Chorus variants → Chorus
+    if 'CHORUS' in k:
+        return AT5_CS_STOMP_MAP["chorus"]
+    # Flanger variants → Flanger
+    if 'FLANG' in k:
+        return AT5_CS_STOMP_MAP["flanger"]
+    # Overdrive/distortion/fuzz → Diode Overdrive
+    if any(x in k for x in ['DRIVE','DIST','FUZZ','BOOST','SHRED','BUZZ','METAL',
+                              'GERMANIUM','CAPTFUZZ','LINEDRIVE','SUPERDRIVE',
+                              'CUSTOMDRIVE','RANGEBOOSTE','VINTAGEDR']):
+        return AT5_CS_STOMP_MAP["overdrive"]
+    # Compressor/limiter → Compressor
+    if any(x in k for x in ['COMPRESS','LIMIT','SWOLE']):
+        return AT5_CS_STOMP_MAP["compress"]
+    # Noise gate → Noise Gate
+    if any(x in k for x in ['GATE','NOISE']):
+        return AT5_CS_STOMP_MAP["noisegate"]
+    # Tremolo → Opto Tremolo
+    if any(x in k for x in ['TREM','TREMOLO']):
+        return AT5_CS_STOMP_MAP["trem"]
+    # EQ variants → Graphic EQ
+    if 'EQ' in k:
+        return AT5_CS_STOMP_MAP["eq"]
+    # Phaser — no CS equivalent, drop
+    if 'PHAS' in k:
+        return AT5_CS_NULL_EFFECT
+    # Unknown — drop rather than guess
+    return AT5_CS_NULL_EFFECT
+
+
 DI_AMP_KEYS = {
     "DI_Amp_TubePre",
     "DI_Amp_BassDriver",
@@ -1027,7 +1198,7 @@ DI_AMP_KEYS = {
 AT5P_TEMPLATE = """\
 <?xml version="1.0" ?>
 <Preset Version="1" Format="at5p" GUID="{guid}" PresetBPM="120" ProgramChange="-1">
-    <Chain Preset="Chain11" MonoChainDualCab="1" DIBeforeAmp="0" />
+    <Chain Preset="Chain11" MonoChainDualCab="1" DIBeforeAmp="{di_before_amp}" />
     <Input Input="1" />
     <Tuner Bypass="1" Mute="0" OutputVolume="1" TunerType="354eca51-457a-41b7-917d-ce6117586905">
         <Tuner Reference="440" NoteReferemce="A" Transpose="0" Temperament="Equal" />
@@ -1109,7 +1280,12 @@ def null_attrs(n):
 def null_slots(n):
     return "\n".join(f"        <Slot{i} />" for i in range(n))
 
-def lookup_amp(rs_key):
+def lookup_amp(rs_key, free_mode=False):
+    if not rs_key:
+        return "", False
+    # Free mode: map to closest AT5 CS amp (6 amps available in free version)
+    if free_mode and rs_key not in DI_AMP_KEYS:
+        return _amp_to_cs_guid(rs_key), True
     if rs_key in AMP_MAP:
         return AMP_MAP[rs_key], True
     rs_lower = rs_key.lower()
@@ -1118,7 +1294,9 @@ def lookup_amp(rs_key):
             return v, False
     return None, False
 
-def lookup_cab(rs_key):
+def lookup_cab(rs_key, free_mode=False):
+    if free_mode:
+        return _cab_to_cs_guid(rs_key), DEFAULT_SPEAKER_A
     enclosure = CAB_ENCLOSURE_MAP.get(rs_key)
     if not enclosure:
         # Fuzzy match
@@ -1140,8 +1318,10 @@ def lookup_cab(rs_key):
     speaker = SPEAKER_MAP.get(rs_key, DEFAULT_SPEAKER_A)
     return enclosure, speaker
 
-def lookup_effect(rs_key):
+def lookup_effect(rs_key, free_mode=False):
     """Return AT5 GUID for a RS effect key, or None if unknown."""
+    if free_mode:
+        return _effect_to_cs_guid(rs_key)  # may be None (effect dropped)
     if rs_key in EFFECT_MAP:
         return EFFECT_MAP[rs_key]
     rs_lower = rs_key.lower()
@@ -1161,7 +1341,7 @@ def rs_knob_to_at5(rs_key, rs_value, amp_guid=""):
         at5_name = f"{at5_name}_{amp_suffix}"
     return at5_name, rs_value / 10.0
 
-def build_stomp_section(gear_slots, n_total=6):
+def build_stomp_section(gear_slots, n_total=6, free_mode=False):
     """
     Build Stomp attrs and Slot elements for a StompX section.
     gear_slots: list of RS gear dicts (may be empty/None)
@@ -1172,7 +1352,7 @@ def build_stomp_section(gear_slots, n_total=6):
     for i in range(n_total):
         slot_data = gear_slots[i] if i < len(gear_slots) else {}
         rs_key = slot_data.get('Key', '') if slot_data else ''
-        effect_guid = lookup_effect(rs_key) if rs_key else None
+        effect_guid = lookup_effect(rs_key, free_mode=free_mode) if rs_key else None
 
         if effect_guid:
             guids.append(effect_guid)
@@ -1185,7 +1365,7 @@ def build_stomp_section(gear_slots, n_total=6):
     attrs = " ".join(f'Stomp{i}="{g}"' for i, g in enumerate(guids))
     return attrs, "\n".join(slot_lines)
 
-def build_rack_section(rack_slots):
+def build_rack_section(rack_slots, free_mode=False):
     """
     Build RackX attrs and Slot elements (2 slots per rack section).
     rack_slots: list of up to 2 RS rack gear dicts
@@ -1196,7 +1376,7 @@ def build_rack_section(rack_slots):
     for i in range(2):
         slot_data = rack_slots[i] if i < len(rack_slots) else {}
         rs_key = slot_data.get('Key', '') if slot_data else ''
-        effect_guid = lookup_effect(rs_key) if rs_key else None
+        effect_guid = lookup_effect(rs_key, free_mode=free_mode) if rs_key else None
 
         if effect_guid:
             guids.append(effect_guid)
@@ -1212,7 +1392,7 @@ def build_rack_section(rack_slots):
 # MAIN CONVERSION
 # ─────────────────────────────────────────────────────────────────────────────
 
-def convert_tone(tone_path: Path, output_dir: Path):
+def convert_tone(tone_path: Path, output_dir: Path, free_mode: bool = False):
     try:
         tone = json.loads(tone_path.read_text(encoding='utf-8'))
     except Exception as e:
@@ -1229,12 +1409,12 @@ def convert_tone(tone_path: Path, output_dir: Path):
     # ── Amp ───────────────────────────────────────────────────────────────────
     amp_data    = gear.get('Amp', {})
     rs_amp_key  = amp_data.get('Key', '')
-    amp_guid, amp_exact = lookup_amp(rs_amp_key)
+    amp_guid, amp_exact = lookup_amp(rs_amp_key, free_mode=free_mode)
 
     if not amp_guid:
         warnings.append(f"Unknown amp '{rs_amp_key}' -> using null amp")
         amp_guid = NULL_GUID
-    elif not amp_exact:
+    elif not amp_exact and not free_mode:
         warnings.append(f"Fuzzy amp match for '{rs_amp_key}'")
 
     knob_values = amp_data.get('KnobValues', {})
@@ -1256,11 +1436,13 @@ def convert_tone(tone_path: Path, output_dir: Path):
         cab_model = DEFAULT_CAB_4x12
         speaker_a = DEFAULT_SPEAKER_A
         speaker_b = DEFAULT_SPEAKER_B
-        cab_muted = "1"
-        amp_muted = "1"
+        cab_muted = "0"  # unmute cab so DI signal reaches output via DIBeforeAmp
+        amp_muted = "1"  # mute amp — signal bypasses via DIBeforeAmp="1"
+        di_before_amp = "1"
     else:
         amp_muted = "0"
-        cab_model, speaker_a = lookup_cab(rs_cab_key)
+        di_before_amp = "0"
+        cab_model, speaker_a = lookup_cab(rs_cab_key, free_mode=free_mode)
         speaker_b  = DEFAULT_SPEAKER_B
         cab_muted  = "0"
         if rs_cab_key and rs_cab_key not in CAB_ENCLOSURE_MAP:
@@ -1268,7 +1450,7 @@ def convert_tone(tone_path: Path, output_dir: Path):
 
     # ── Pre-amp stomps (PrePedal1/2 -> StompA1 slots 0-1) ────────────────────
     pre_pedals = [gear.get('PrePedal1', {}), gear.get('PrePedal2', {})]
-    stompa1_attrs, stompa1_slots = build_stomp_section(pre_pedals, n_total=6)
+    stompa1_attrs, stompa1_slots = build_stomp_section(pre_pedals, n_total=6, free_mode=free_mode)
     for p in pre_pedals:
         k = p.get('Key', '') if p else ''
         if k and not lookup_effect(k):
@@ -1276,7 +1458,7 @@ def convert_tone(tone_path: Path, output_dir: Path):
 
     # ── Post stomps (PostPedal1/2 -> StompB1 slots 0-1) ──────────────────────
     post_pedals = [gear.get('PostPedal1', {}), gear.get('PostPedal2', {})]
-    stompb1_attrs, stompb1_slots = build_stomp_section(post_pedals, n_total=6)
+    stompb1_attrs, stompb1_slots = build_stomp_section(post_pedals, n_total=6, free_mode=free_mode)
     for p in post_pedals:
         k = p.get('Key', '') if p else ''
         if k and not lookup_effect(k):
@@ -1284,8 +1466,8 @@ def convert_tone(tone_path: Path, output_dir: Path):
 
     # ── Rack effects (Rack1-4 -> RackA slot0/1, RackB slot0/1) ───────────────
     racks = [gear.get(f'Rack{i}', {}) for i in range(1, 5)]
-    racka_attrs, racka_slots = build_rack_section(racks[0:2])
-    rackb_attrs, rackb_slots = build_rack_section(racks[2:4])
+    racka_attrs, racka_slots = build_rack_section(racks[0:2], free_mode=free_mode)
+    rackb_attrs, rackb_slots = build_rack_section(racks[2:4], free_mode=free_mode)
     for r in racks:
         k = r.get('Key', '') if r else ''
         if k and not lookup_effect(k):
@@ -1297,6 +1479,7 @@ def convert_tone(tone_path: Path, output_dir: Path):
         amp_guid      = amp_guid,
         amp_muted     = amp_muted,
         amp_params    = amp_params_str,
+        di_before_amp = di_before_amp,
         null_guid     = NULL_GUID,
         cab_model     = cab_model,
         cab_muted     = cab_muted,
@@ -1526,7 +1709,8 @@ def convert_tone_rs2014(tone_path: Path, output_dir: Path):
 
 
 def _convert_tone_from_gearlist(tone_key: str, tone_name: str, gear: dict,
-                                 source_path: Path, output_dir: Path) -> list:
+                                 source_path: Path, output_dir: Path,
+                                 free_mode: bool = False) -> list:
     """Shared assembly logic for both JSON and XML RS2014 paths."""
     warnings  = []
     out_paths = []
@@ -1534,7 +1718,7 @@ def _convert_tone_from_gearlist(tone_key: str, tone_name: str, gear: dict,
     # ── Amp ──────────────────────────────────────────────────────────────
     amp_data   = gear.get("Amp", {})
     rs_amp_key = amp_data.get("Key", "")
-    amp_guid, amp_exact = lookup_amp(rs_amp_key)
+    amp_guid, amp_exact = lookup_amp(rs_amp_key, free_mode=free_mode)
 
     if not amp_guid:
         warnings.append(f"Unknown amp '{rs_amp_key}' -> using null amp")
@@ -1553,17 +1737,27 @@ def _convert_tone_from_gearlist(tone_key: str, tone_name: str, gear: dict,
     # ── Cabinet ───────────────────────────────────────────────────────────
     cab_data   = gear.get("Cabinet", {})
     rs_cab_key = cab_data.get("Key", "")
-    amp_muted  = "0"
-    cab_model, speaker_a = lookup_cab(rs_cab_key)
-    speaker_b  = DEFAULT_SPEAKER_B
-    cab_muted  = "0"
-    if rs_cab_key and rs_cab_key not in CAB_ENCLOSURE_MAP:
-        warnings.append(f"Fuzzy/default cab match for '{rs_cab_key}'")
+    is_di_tone = rs_amp_key in DI_AMP_KEYS
+    if is_di_tone:
+        amp_muted     = "1"
+        di_before_amp = "1"
+        cab_muted     = "0"
+        cab_model     = DEFAULT_CAB_4x12
+        speaker_a     = DEFAULT_SPEAKER_A
+        speaker_b     = DEFAULT_SPEAKER_B
+    else:
+        amp_muted     = "0"
+        di_before_amp = "0"
+        cab_model, speaker_a = lookup_cab(rs_cab_key, free_mode=free_mode)
+        speaker_b  = DEFAULT_SPEAKER_B
+        cab_muted  = "0"
+        if rs_cab_key and rs_cab_key not in CAB_ENCLOSURE_MAP:
+            warnings.append(f"Fuzzy/default cab match for '{rs_cab_key}'")
 
     # ── Pre-amp stomps (PrePedal1-4 -> StompA1 slots 0-3) ────────────────
     # RS2014 supports up to 4 pre/post pedals; RS+ only 2 — pass all 4.
     pre_pedals = [gear.get(f"PrePedal{i}", {}) for i in range(1, 5)]
-    stompa1_attrs, stompa1_slots = build_stomp_section(pre_pedals, n_total=6)
+    stompa1_attrs, stompa1_slots = build_stomp_section(pre_pedals, n_total=6, free_mode=free_mode)
     for p in pre_pedals:
         k = p.get("Key", "") if p else ""
         if k and not lookup_effect(k):
@@ -1571,7 +1765,7 @@ def _convert_tone_from_gearlist(tone_key: str, tone_name: str, gear: dict,
 
     # ── Post stomps (PostPedal1-4 -> StompB1 slots 0-3) ──────────────────
     post_pedals = [gear.get(f"PostPedal{i}", {}) for i in range(1, 5)]
-    stompb1_attrs, stompb1_slots = build_stomp_section(post_pedals, n_total=6)
+    stompb1_attrs, stompb1_slots = build_stomp_section(post_pedals, n_total=6, free_mode=free_mode)
     for p in post_pedals:
         k = p.get("Key", "") if p else ""
         if k and not lookup_effect(k):
@@ -1579,8 +1773,8 @@ def _convert_tone_from_gearlist(tone_key: str, tone_name: str, gear: dict,
 
     # ── Rack effects ──────────────────────────────────────────────────────
     racks = [gear.get(f"Rack{i}", {}) for i in range(1, 5)]
-    racka_attrs, racka_slots = build_rack_section(racks[0:2])
-    rackb_attrs, rackb_slots = build_rack_section(racks[2:4])
+    racka_attrs, racka_slots = build_rack_section(racks[0:2], free_mode=free_mode)
+    rackb_attrs, rackb_slots = build_rack_section(racks[2:4], free_mode=free_mode)
     for r in racks:
         k = r.get("Key", "") if r else ""
         if k and not lookup_effect(k):
@@ -1611,6 +1805,7 @@ def _convert_tone_from_gearlist(tone_key: str, tone_name: str, gear: dict,
         null6_attrs   = null_attrs(6), null6_slots = null_slots(6),
         description   = tone_key,
         song          = tone_name,
+        di_before_amp = di_before_amp,
     )
 
     safe_name = "".join(c if c.isalnum() or c in "-_ " else "_" for c in tone_name)

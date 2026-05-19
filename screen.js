@@ -286,12 +286,35 @@ async function _at5RequestLiveConvert(filename) {
             Object.keys(_at5LiveSlots).forEach(k => delete _at5LiveSlots[k]);
             Object.assign(_at5LiveSlots, data.slots);
             const n = Object.keys(_at5LiveSlots).length;
-            console.log(`[AT5 Live] ${n} tones in live slots (${data.elapsed_ms}ms)${data.cached ? ' [cached]' : ''}`);
+            const src = data.source === 'song-local' ? ' [song-local]' : data.cached ? ' [cached]' : ' [live-convert]';
+        console.log(`[AT5 Live] ${n} tones in live slots (${data.elapsed_ms}ms)${src}`);
             if (data.warnings?.length) data.warnings.forEach(w => console.warn('[AT5 Live]', w));
             _at5RenderStatus(); // refresh UI to show live slot status
         }
     } catch(e) {
         console.warn('[AT5 Live] Fetch error:', e.message);
+    }
+}
+
+// ── Save-back ─────────────────────────────────────────────────────────────
+async function _at5SaveBack(toneKey) {
+    const key = toneKey || '*';
+    try {
+        const r = await fetch('/api/plugins/at5_tone/preset/save-back', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ tone_key: key }),
+        });
+        const data = await r.json();
+        if (data.status === 'ok') {
+            console.log('[AT5] Saved back:', data.saved, '->', data.song_dir);
+            _at5RenderStatus();
+            return data;
+        } else {
+            console.warn('[AT5] Save-back failed:', data.message);
+        }
+    } catch(e) {
+        console.warn('[AT5] Save-back error:', e.message);
     }
 }
 
@@ -302,8 +325,9 @@ function _at5StopScheduler(sendReset) {
     _at5LastFired = -1;
     _at5LastKey   = null;
     _at5LastT     = null;
-    if (sendReset && _at5MidiBridgeUrl) {
-        fetch(_at5MidiBridgeUrl + '/pc', {
+    // Only reset if we actually fired a tone during this song
+    if (sendReset && _at5LastKey && typeof AT5_BRIDGE_URL !== 'undefined') {
+        fetch(AT5_BRIDGE_URL + '/pc', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ channel: 0, bank_msb: 0, bank_lsb: 0, program: 0 }),
@@ -523,13 +547,20 @@ async function _at5RenderStatus() {
     if (_at5LiveEnabled) {
         const liveCount = Object.keys(_at5LiveSlots).length;
         const liveLabel = liveCount > 0
-            ? `${liveCount} tones converted (PC ${LIVE_SLOT_START}–${LIVE_SLOT_START+liveCount-1})`
+            ? `${liveCount} tones (PC ${LIVE_SLOT_START}–${LIVE_SLOT_START+liveCount-1})`
             : (_at5LiveLastFile ? 'converting…' : 'idle — loads on next song');
         html += `<div class="text-xs ${liveCount > 0 ? 'text-green-500' : 'text-gray-500'}">Live slots: ${liveLabel}</div>`;
         if (liveCount > 0) {
             html += `<div class="text-xs text-gray-600 pl-2">` +
                 Object.entries(_at5LiveSlots).map(([k,pc]) => `PC${pc}: ${esc(k)}`).join(' · ') +
                 `</div>`;
+            // Save-back button — saves dialled-in AT5 preset back to song folder
+            html += `<div class="mt-2">
+                <button onclick="_at5SaveBack('*')" class="text-xs px-2 py-1 border border-gray-700 rounded hover:border-orange-500 hover:text-orange-400 transition">
+                    💾 Save current presets back to song
+                </button>
+                <span class="text-xs text-gray-600 ml-2">Persists your AT5 edits with this song</span>
+            </div>`;
         }
     }
     html += `</div>`;
@@ -611,16 +642,47 @@ function at5TestSend() {
 }
 
 // ── Tab switcher ───────────────────────────────────────────────────────────
+// ── Settings ──────────────────────────────────────────────────────────────
+async function _at5LoadSettings() {
+    try {
+        const r = await fetch('/api/plugins/at5_tone/settings');
+        if (!r.ok) return;
+        const data = await r.json();
+        const cb = document.getElementById('at5-free-mode-checkbox');
+        if (cb) cb.checked = !!data.free_mode;
+    } catch(e) {}
+}
+
+async function at5SetFreeMode(enabled) {
+    try {
+        const r = await fetch('/api/plugins/at5_tone/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ free_mode: enabled }),
+        });
+        const data = await r.json();
+        console.log(`[AT5] Free mode: ${data.free_mode}`);
+        Object.keys(_at5LiveSlots).forEach(k => delete _at5LiveSlots[k]);
+        _at5LiveLastFile = null;
+        _at5RenderStatus();
+    } catch(e) {
+        console.warn('[AT5] Settings error:', e.message);
+    }
+}
+
 function at5ShowTab(tab) {
-    ['status', 'browser', 'log'].forEach(t => {
-        document.getElementById(`at5-tab-${t}`)?.classList.toggle('hidden', t !== tab);
-        document.getElementById(`at5-tabbtn-${t}`)?.classList.toggle('border-orange-500', t === tab);
-        document.getElementById(`at5-tabbtn-${t}`)?.classList.toggle('text-white', t === tab);
-        document.getElementById(`at5-tabbtn-${t}`)?.classList.toggle('border-transparent', t !== tab);
-        document.getElementById(`at5-tabbtn-${t}`)?.classList.toggle('text-gray-500', t !== tab);
+    ['status', 'browser', 'log', 'settings'].forEach(t => {
+        const tabEl = document.getElementById(`at5-tab-${t}`);
+        const btnEl = document.getElementById(`at5-tabbtn-${t}`);
+        if (tabEl) tabEl.style.display = (t === tab) ? '' : 'none';
+        if (btnEl) {
+            btnEl.style.borderBottomColor = (t === tab) ? '#f97316' : 'transparent';
+            btnEl.style.color = (t === tab) ? '#fff' : '#6b7280';
+        }
     });
     if (tab === 'log') _at5RefreshLogUI();
     if (tab === 'status') _at5RenderStatus();
+    if (tab === 'settings') _at5LoadSettings();
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
@@ -641,6 +703,9 @@ window._at5Log           = _at5Log;
 window._at5SetPrefire    = (v) => { AT5_PREFIRE_MS = parseFloat(v) || 0; };
 window._at5LiveSlots     = _at5LiveSlots;
 window._at5RequestLiveConvert = _at5RequestLiveConvert;
+window._at5SaveBack          = _at5SaveBack;
+window._at5LoadSettings      = _at5LoadSettings;
+window.at5SetFreeMode        = at5SetFreeMode;
 
 // Reset AT5 to PC 0 when song stops
 (function() {
