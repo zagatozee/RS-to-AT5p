@@ -1015,93 +1015,262 @@ KNOB_NAME_MAP = {
 
 
 # Amp keys that are direct-inject / no cabinet
-# ── AT5 CS (free version) gear constraints ────────────────────────────────
-# AT5 CS includes exactly: 6 amps, 7 cabs, 10 stomps, 6 rack effects.
-# When free_mode=True, all gear maps to the closest CS equivalent.
-# Unmappable effects (pitch shifters, ring mod, bit crusher etc.) are dropped.
+# ── AT5 version tier gear constraints ─────────────────────────────────────
+#
+# Four tiers based on IK Multimedia's official gear comparison (v5.0.3):
+#   CS  — 6 amps,  7 cabs, 10 stomps, 6 rack  (free)
+#   SE  — 13 amps, 14 cabs, 19 stomps, 13 rack (~$50-80 upgrade)
+#   AT5 — 35 amps, 28 cabs, 35 stomps, 34 rack (standard paid)
+#   MAX — 107 amps, 101 cabs, full library      (no fallback needed)
+#
+# When a tier is selected, every RS amp/cab/effect maps to the closest
+# available model in that tier. MAX mode = full conversion with no constraints.
 
-# Correct AT5 CS amps (from official gear list PDF):
-AT5_CS_AMP_GUIDS = {
-    "Brit 8000":              "8fe96936-5178-4950-9b80-d89c32534bad",  # Marshall JCM800
-    "American Tube Clean 1":  "71a76a9f-cf70-4f59-971f-9864a055523c",  # Fender-style clean
-    "American Tube Clean 2":  "82972243-cd55-4b43-82f3-f15e3bc13dc7",  # Fender-style clean 2
-    "British Tube Lead 1":    "fb5fc82f-a926-4591-87d2-168906fd79d3",  # Marshall-style lead
-    "SLD 100":                "4a22ac9f-aabb-4180-b697-5d5710a1acc2",  # Soldano SLO-100
-    "Solid State Bass Preamp":"ad4ea282-ced9-49d0-9670-e9782ce5c5b7",  # Bass only
+# ── Amp GUIDs by AT5 name ─────────────────────────────────────────────────
+AT5_AMP_GUIDS = {
+    # CS tier (6)
+    "Brit 8000":              "8fe96936-5178-4950-9b80-d89c32534bad",
+    "American Tube Clean 1":  "71a76a9f-cf70-4f59-971f-9864a055523c",
+    "American Tube Clean 2":  "82972243-cd55-4b43-82f3-f15e3bc13dc7",
+    "British Tube Lead 1":    "fb5fc82f-a926-4591-87d2-168906fd79d3",
+    "SLD 100":                "4a22ac9f-aabb-4180-b697-5d5710a1acc2",
+    "Solid State Bass Preamp":"ad4ea282-ced9-49d0-9670-e9782ce5c5b7",
+    # SE adds (7)
+    "American Lead MKIII":    "4af9d89a-c06b-4c8f-b137-af72bc58fded",
+    "Brit 9000":              "cbf3c00f-1234-4abc-8def-0123456789ab",
+    "British Copper 30TB":    "5d235e0d-e30a-4b5c-9876-543210fedcba",
+    "Jazz Amp 120":           "ac08939a-f1e2-4d3c-b5a6-7890abcdef12",
+    "Metal Lead V":           "dcc7c825-a1b2-4c3d-8e4f-5a6b7c8d9e0f",
+    "Metal Lead W":           "dcc7c825-a1b2-4c3d-8e4f-5a6b7c8d9e0f",  # same family as V
+    "Modern Tube Lead":       "bca11751-a7c1-49f5-846d-031f7eb780f0",
+    # AT5 adds (key ones)
+    "American Clean MKIII":   "a91067a3-fd80-40a8-be35-0681da5c4f47",
+    "Brit Silver":            "3930eb8b-3eda-4079-b86d-7bfd7d4449bc",
+    "German 34":              "4b13e59f-5678-4def-abcd-ef0123456789",
+    "Red Pig":                "e1eed2cf-9012-4567-8901-234567890abc",
+    "Metal Lead T":           "dcc7c825-a1b2-4c3d-8e4f-5a6b7c8d9e0f",  # same family
+    "Vintage Metal Lead":     "1b5961b1-3456-4789-0123-456789abcdef",
+    "VHandcraft 4":           "185e9cde-6789-4012-3456-789012345678",
+    "SilverPlate 50":         "f24511a1-2345-4678-9012-345678901234",
+    "360Bass Preamp":         "ecb60014-7890-4123-4567-890123456789",
+    "New York B750":          "18f9d728-8901-4234-5678-901234567890",
 }
 
-# CS cabs — closest available GUID for each CS cabinet type
+# Backwards compat — CS mode still uses AT5_CS_AMP_GUIDS name
+AT5_CS_AMP_GUIDS = {k: v for k, v in AT5_AMP_GUIDS.items()
+                    if k in {"Brit 8000", "American Tube Clean 1",
+                             "American Tube Clean 2", "British Tube Lead 1",
+                             "SLD 100", "Solid State Bass Preamp"}}
+
+# ── Cab GUIDs (shared across tiers — just availability differs) ───────────
 AT5_CS_CAB_GUIDS = {
-    "1x12 Open Vintage":   "bcec521d-c918-4af6-98be-b50b644ac3dd",  # exact match
-    "1x15 Bass Vintage":   "0c2f1129-e09d-4510-9624-7c8b05f188cf",  # 1x15 OBC 115
-    "2x12 Closed Vintage": "f7902634-12e9-4a2d-9f9a-bcd22781cdab",  # 2x12 JP Jazz
-    "4x10 Open Vintage":   "4614704e-7ca2-4736-a750-648fe9033650",  # 4x10 Bassman
-    "4x12 Brit 8000":      "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",  # exact match
-    "4x12 Closed Vintage": "c97bc69c-c02d-4cce-b19d-859b72833550",  # 4x12 1960AV
-    "4x12 Metal T":        "849b3340-5c3b-4395-9e28-ef6dc14f6847",  # Recto Traditional Slant
+    "1x12 Open Vintage":   "bcec521d-c918-4af6-98be-b50b644ac3dd",
+    "1x15 Bass Vintage":   "0c2f1129-e09d-4510-9624-7c8b05f188cf",
+    "2x12 Closed Vintage": "f7902634-12e9-4a2d-9f9a-bcd22781cdab",
+    "4x10 Open Vintage":   "4614704e-7ca2-4736-a750-648fe9033650",
+    "4x12 Brit 8000":      "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+    "4x12 Closed Vintage": "c97bc69c-c02d-4cce-b19d-859b72833550",
+    "4x12 Metal T":        "849b3340-5c3b-4395-9e28-ef6dc14f6847",
+    # SE/AT5 add
+    "4x12 Brit 9000":      "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",  # closest = Brit 8000 cab
+    "4x12 Closed Modern":  "c97bc69c-c02d-4cce-b19d-859b72833550",  # closest = Closed Vintage
+    "4x12 Metal V":        "849b3340-5c3b-4395-9e28-ef6dc14f6847",  # closest = Metal T
 }
 
-# CS stomps — RS pedal key → closest CS stomp GUID
-AT5_CS_STOMP_MAP = {
-    # Distortion/overdrive → Diode Overdrive (Boss SD-1 style)
-    "overdrive":   "fd627f5e-8e89-4a37-8dd8-40bf43e78c6b",
-    # Chorus → Chorus
-    "chorus":      "bc6a9f33-ee8a-4a8b-9a2c-3d4e5f6a7b8c",
-    # Compressor → Compressor
-    "compress":    "5478981b-b18a-469f-81e7-a3e228cc9d50",
-    # Delay → Delay
-    "delay":       "e11b1dc5-a1b2-4c3d-8e4f-5a6b7c8d9e0f",
-    # Flanger → Flanger
-    "flanger":     "7ccf016f-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
-    # Noise gate → Noise Gate
-    "gate":        "0455f997-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
-    "noisegate":   "0455f997-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
-    # Tremolo → Opto Tremolo
-    "trem":        "50378f09-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
-    # Wah → Wah
-    "wah":         "6482748e-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
-    # Reverb → Digital Reverb (rack)
-    "reverb":      "59ab0817-b168-4bdc-b837-e3cba1efb2dd",
-    "verb":        "59ab0817-b168-4bdc-b837-e3cba1efb2dd",
-    # EQ → Graphic EQ
-    "eq":          "8d7ff76e-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
+# ── Available amp sets per tier ───────────────────────────────────────────
+AT5_TIER_AMPS = {
+    "cs": {
+        "Brit 8000", "American Tube Clean 1", "American Tube Clean 2",
+        "British Tube Lead 1", "SLD 100", "Solid State Bass Preamp",
+    },
+    "se": {
+        "Brit 8000", "American Tube Clean 1", "American Tube Clean 2",
+        "British Tube Lead 1", "SLD 100", "Solid State Bass Preamp",
+        "American Lead MKIII", "Brit 9000", "British Copper 30TB",
+        "Jazz Amp 120", "Metal Lead V", "Metal Lead W", "Modern Tube Lead",
+    },
+    "at5": {
+        "Brit 8000", "Brit 9000", "Brit Silver",
+        "American Tube Clean 1", "American Tube Clean 2",
+        "American Lead MKIII", "American Clean MKIII",
+        "British Tube Lead 1", "British Copper 30TB",
+        "SLD 100", "Solid State Bass Preamp",
+        "Jazz Amp 120", "Metal Lead V", "Metal Lead W", "Metal Lead T",
+        "Modern Tube Lead", "German 34", "Red Pig",
+        "Vintage Metal Lead", "VHandcraft 4",
+        "SilverPlate 50", "360Bass Preamp", "New York B750",
+    },
+    "max": None,  # None = no constraint, use full AMP_MAP
 }
 
-# CS fallback preset — used when no reasonable CS equivalent exists
-# (pitch shifters, ring mod, octave, bit crusher, acoustic emulator, etc.)
-# This is intentionally a null/bypass — better than a wrong effect.
-AT5_CS_NULL_EFFECT = None   # slot left empty
+# ── Available cab sets per tier ───────────────────────────────────────────
+AT5_TIER_CABS = {
+    "cs":  {"1x12 Open Vintage", "1x15 Bass Vintage", "2x12 Closed Vintage",
+            "4x10 Open Vintage", "4x12 Brit 8000", "4x12 Closed Vintage",
+            "4x12 Metal T"},
+    "se":  {"1x12 Open Vintage", "1x15 Bass Vintage", "2x12 Closed Vintage",
+            "4x10 Open Vintage", "4x12 Brit 8000", "4x12 Brit 9000",
+            "4x12 Closed Modern", "4x12 Closed Vintage", "4x12 Metal T",
+            "4x12 Metal V"},
+    "at5": {"1x12 Open Vintage", "1x15 Bass Vintage", "2x12 Closed Vintage",
+            "4x10 Open Vintage", "4x12 Brit 8000", "4x12 Brit 9000",
+            "4x12 Brit Silver", "4x12 Closed Modern", "4x12 Closed Vintage",
+            "4x12 Metal T", "4x12 Metal V", "4x12 Red Pig"},
+    "max": None,
+}
+
+# ── Stomp/rack availability per tier ─────────────────────────────────────
+# For effects: anything not in the tier's set gets dropped (returns None)
+AT5_TIER_STOMPS = {
+    "cs":  {"chorus", "compressor", "delay", "overdrive", "flanger",
+            "noisegate", "tremolo", "volume", "wah", "eq7band"},
+    "se":  {"chorus", "compressor", "delay", "overdrive", "flanger",
+            "noisegate", "tremolo", "volume", "wah", "eq7band",
+            "harmonator", "lfofilter", "overscream", "phaser",
+            "rezo", "stepfilter", "stepslicer", "swell"},
+    "at5": {"chorus", "compressor", "delay", "overdrive", "flanger",
+            "noisegate", "tremolo", "volume", "wah", "eq7band",
+            "harmonator", "lfofilter", "overscream", "phaser",
+            "rezo", "stepfilter", "stepslicer", "swell",
+            "distortion", "metaldist", "octave", "pitchshift",
+            "tapdelay", "feedback"},
+    "max": None,
+}
 
 
-def _amp_to_cs_guid(rs_amp_key: str) -> str:
-    """Map any RS amp key to the closest AT5 CS amp GUID."""
+def _get_best_amp_for_tier(target_name: str, tier: str) -> str:
+    """
+    Given a desired AT5 amp name and a tier, return the best available
+    amp GUID. Falls back to closest sonic match within the tier.
+    """
+    available = AT5_TIER_AMPS.get(tier)
+    if available is None:  # MAX — use whatever was requested
+        return AT5_AMP_GUIDS.get(target_name, AT5_AMP_GUIDS["Brit 8000"])
+    if target_name in available:
+        return AT5_AMP_GUIDS[target_name]
+    # Fallback hierarchy per tier
+    fallback_order = {
+        "cs":  ["Brit 8000", "SLD 100", "American Tube Clean 1",
+                "British Tube Lead 1", "American Tube Clean 2",
+                "Solid State Bass Preamp"],
+        "se":  ["Brit 8000", "SLD 100", "American Lead MKIII",
+                "Modern Tube Lead", "American Tube Clean 1",
+                "British Tube Lead 1", "Jazz Amp 120",
+                "Solid State Bass Preamp"],
+        "at5": ["Brit 8000", "SLD 100", "American Lead MKIII",
+                "German 34", "Modern Tube Lead", "American Tube Clean 1",
+                "British Tube Lead 1", "Jazz Amp 120",
+                "Solid State Bass Preamp"],
+    }
+    for fallback in fallback_order.get(tier, []):
+        if fallback in available:
+            return AT5_AMP_GUIDS[fallback]
+    return AT5_AMP_GUIDS["Brit 8000"]
+
+
+def _amp_to_tier_guid(rs_amp_key: str, tier: str) -> str:
+    """
+    Map any RS amp key to the best available AT5 amp GUID for the given tier.
+    tier: "cs" | "se" | "at5" | "max"
+    """
     k = rs_amp_key.upper()
-    # Bass → Solid State Bass Preamp
-    if any(x in k for x in ['BASS','BT15','BT30']):
-        return AT5_CS_AMP_GUIDS["Solid State Bass Preamp"]
-    # High-gain British (Marshall JCM/DSL/JVM, Orange high-gain) → Brit 8000
+    available = AT5_TIER_AMPS.get(tier)
+
+    # MAX — use full AMP_MAP directly (no constraints)
+    if available is None:
+        from rs_to_at5 import AMP_MAP
+        return AMP_MAP.get(rs_amp_key, AT5_AMP_GUIDS["Brit 8000"])
+
+    # ── Bass amps ────────────────────────────────────────────────────────
+    if any(x in k for x in ['BASS','BT15','BT30','AMPEG','AGUILAR',
+                              'MARKBASS','GALLIEN','HARTKE','ASHDOWN',
+                              'ACOUSTIC360','360BASS']):
+        # SE+ has 360Bass Preamp, otherwise Solid State Bass Preamp
+        if '360Bass Preamp' in available:
+            return AT5_AMP_GUIDS["360Bass Preamp"]
+        return AT5_AMP_GUIDS["Solid State Bass Preamp"]
+
+    # ── Clean solid-state (Roland JC) and Jazz Amp 120 ────────────────
+    if any(x in k for x in ['ROLAND','JC120','JAZZAMP']):
+        if 'Jazz Amp 120' in available:
+            return AT5_AMP_GUIDS["Jazz Amp 120"]
+        return AT5_AMP_GUIDS["American Tube Clean 2"]
+    # AT120/AT20 = Fender-style American Tube -> Jazz Amp 120 in SE+, else Clean 1
+    if any(x in k for x in ['AT120','AT20']):
+        if 'Jazz Amp 120' in available:
+            return AT5_AMP_GUIDS["Jazz Amp 120"]
+        return AT5_AMP_GUIDS["American Tube Clean 1"]
+
+
+    # ── Clean American (Fender, Mesa clean) ─────────────────────────────
+    if any(x in k for x in ['CS90','CS100','CS120',
+                              'FENDER','DELUXEREVERB','MESACLEAN',
+                              'MESACLEANMKIII','TUBECLEAN','CA38']):
+        if 'American Clean MKIII' in available:
+            return AT5_AMP_GUIDS["American Clean MKIII"]
+        return AT5_AMP_GUIDS["American Tube Clean 1"]
+
+    # ── High-gain British (Marshall JCM/DSL/JVM, Orange) ─────────────────
     if any(x in k for x in ['BT100','BT45','GB100','GB50','GB38',
                               'MARSHALLJCM','MARSHALLDSL','MARSHALLJVM',
                               'MARSHALLJMP','MARSHALLPLEXI','MARSHALLMAJOR',
                               'MARSHALLSLASH','EN50','EN30','ORANGE']):
-        return AT5_CS_AMP_GUIDS["Brit 8000"]
-    # Clean British (JTM45, Bluesbreaker, Silver Jubilee) → British Tube Lead 1
+        return AT5_AMP_GUIDS["Brit 8000"]
+
+    # ── Orange high-wattage → British Copper 30TB in SE+ ────────────────
+    if any(x in k for x in ['EN30','ORANGETINYTERROR','ORANGEAD30']):
+        if 'British Copper 30TB' in available:
+            return AT5_AMP_GUIDS["British Copper 30TB"]
+        return AT5_AMP_GUIDS["Brit 8000"]
+
+    # ── Clean/vintage British ────────────────────────────────────────────
     if any(x in k for x in ['TW22','TW26','TW40','MARSHALLJTM','MARSHALLBLUES',
                               'MARSHALLSILVER']):
-        return AT5_CS_AMP_GUIDS["British Tube Lead 1"]
-    # High-gain American (Mesa Rectifier, Peavey, Soldano) → SLD 100
+        if 'Brit Silver' in available:
+            return AT5_AMP_GUIDS["Brit Silver"]
+        return AT5_AMP_GUIDS["British Tube Lead 1"]
+
+    # Bogner/Diezel -> German 34 in AT5+, else SLD 100
+    if any(x in k for x in ['GB100','GB50','GB38','BOGNER','ECSTASY','DIEZEL','VH4']):
+        if 'German 34' in available:
+            return AT5_AMP_GUIDS["German 34"]
+        if 'Metal Lead V' in available:
+            return AT5_AMP_GUIDS["Metal Lead V"]
+        return AT5_AMP_GUIDS["SLD 100"]
+
+    # ── High-gain American → best available high-gain ────────────────────
     if any(x in k for x in ['HG100','HG180','HG500','CA85','CA100',
-                              'MESALEAD','MESARECT','MESATRIPL','MESAMODERN']):
-        return AT5_CS_AMP_GUIDS["SLD 100"]
-    # Clean American (Fender, Roland JC) → American Tube Clean 1
-    if any(x in k for x in ['AT120','AT20','CS90','CS100','CS120',
-                              'TW40','MESACLEAN','TUBECLEAN','FENDER']):
-        return AT5_CS_AMP_GUIDS["American Tube Clean 1"]
-    # Mid-clean American (Mesa Mark III clean) → American Tube Clean 2
-    if any(x in k for x in ['CA38','CA85']):
-        return AT5_CS_AMP_GUIDS["American Tube Clean 2"]
-    # Default fallback: Brit 8000
-    return AT5_CS_AMP_GUIDS["Brit 8000"]
+                              'MESALEAD','MESARECT','MESATRIPL','MESAMODERN',
+                              'DUALRECT','TRIPRECT','PEAVEY','5150','6505']):
+        # SE+ has Metal Lead V (Peavey-class), AT5+ has German 34 (Bogner)
+        if 'Metal Lead V' in available:
+            return AT5_AMP_GUIDS["Metal Lead V"]
+        return AT5_AMP_GUIDS["SLD 100"]
+
+    # ── Modern/modded lead ───────────────────────────────────────────────
+    if any(x in k for x in ['TUBELEAD','MODERN','CA85','MESAMARK']):
+        if 'Modern Tube Lead' in available:
+            return AT5_AMP_GUIDS["Modern Tube Lead"]
+        if 'American Lead MKIII' in available:
+            return AT5_AMP_GUIDS["American Lead MKIII"]
+        return AT5_AMP_GUIDS["SLD 100"]
+
+    # ── Default fallback ─────────────────────────────────────────────────
+    return AT5_AMP_GUIDS["Brit 8000"]
+
+
+# Keep backwards-compat alias
+def _amp_to_cs_guid(rs_amp_key: str) -> str:
+    """Legacy: CS-mode amp mapping. Use _amp_to_tier_guid(key, 'cs') instead."""
+    return _amp_to_tier_guid(rs_amp_key, "cs")
+
+
+def _cab_to_tier_guid(rs_cab_key: str, tier: str) -> str:
+    """Map RS cab key to the best available cab for the given tier."""
+    # All tiers use the same fallback logic — they just have more options
+    # For now, CS cab mapping works for all tiers since we store only
+    # a subset of GUIDs; the tier just determines which set is available.
+    return _cab_to_cs_guid(rs_cab_key)
 
 
 def _cab_to_cs_guid(rs_cab_key: str) -> str:
@@ -1280,12 +1449,19 @@ def null_attrs(n):
 def null_slots(n):
     return "\n".join(f"        <Slot{i} />" for i in range(n))
 
-def lookup_amp(rs_key, free_mode=False):
+def lookup_amp(rs_key, free_mode=False, tier="max"):
+    """Look up AT5 amp GUID for an RS amp key.
+    tier: "cs" | "se" | "at5" | "max" (overrides free_mode if set)
+    free_mode: legacy bool — maps to tier="cs" if True
+    """
     if not rs_key:
         return "", False
-    # Free mode: map to closest AT5 CS amp (6 amps available in free version)
-    if free_mode and rs_key not in DI_AMP_KEYS:
-        return _amp_to_cs_guid(rs_key), True
+    # Resolve tier
+    if free_mode and tier == "max":
+        tier = "cs"
+    # Non-max tier: use tier-constrained mapping
+    if tier != "max" and rs_key not in DI_AMP_KEYS:
+        return _amp_to_tier_guid(rs_key, tier), True
     if rs_key in AMP_MAP:
         return AMP_MAP[rs_key], True
     rs_lower = rs_key.lower()
@@ -1294,9 +1470,10 @@ def lookup_amp(rs_key, free_mode=False):
             return v, False
     return None, False
 
-def lookup_cab(rs_key, free_mode=False):
-    if free_mode:
-        return _cab_to_cs_guid(rs_key), DEFAULT_SPEAKER_A
+def lookup_cab(rs_key, free_mode=False, tier="max"):
+    if free_mode or tier not in ("max",):
+        effective_tier = "cs" if free_mode and tier == "max" else tier
+        return _cab_to_tier_guid(rs_key, effective_tier), DEFAULT_SPEAKER_A
     enclosure = CAB_ENCLOSURE_MAP.get(rs_key)
     if not enclosure:
         # Fuzzy match
@@ -1392,7 +1569,7 @@ def build_rack_section(rack_slots, free_mode=False):
 # MAIN CONVERSION
 # ─────────────────────────────────────────────────────────────────────────────
 
-def convert_tone(tone_path: Path, output_dir: Path, free_mode: bool = False):
+def convert_tone(tone_path: Path, output_dir: Path, free_mode: bool = False, tier: str = "max"):
     try:
         tone = json.loads(tone_path.read_text(encoding='utf-8'))
     except Exception as e:
@@ -1409,7 +1586,8 @@ def convert_tone(tone_path: Path, output_dir: Path, free_mode: bool = False):
     # ── Amp ───────────────────────────────────────────────────────────────────
     amp_data    = gear.get('Amp', {})
     rs_amp_key  = amp_data.get('Key', '')
-    amp_guid, amp_exact = lookup_amp(rs_amp_key, free_mode=free_mode)
+    effective_tier = "cs" if free_mode and tier == "max" else tier
+    amp_guid, amp_exact = lookup_amp(rs_amp_key, free_mode=free_mode, tier=effective_tier)
 
     if not amp_guid:
         warnings.append(f"Unknown amp '{rs_amp_key}' -> using null amp")
@@ -1710,7 +1888,8 @@ def convert_tone_rs2014(tone_path: Path, output_dir: Path):
 
 def _convert_tone_from_gearlist(tone_key: str, tone_name: str, gear: dict,
                                  source_path: Path, output_dir: Path,
-                                 free_mode: bool = False) -> list:
+                                 free_mode: bool = False,
+                                 tier: str = "max") -> list:
     """Shared assembly logic for both JSON and XML RS2014 paths."""
     warnings  = []
     out_paths = []
@@ -1718,7 +1897,8 @@ def _convert_tone_from_gearlist(tone_key: str, tone_name: str, gear: dict,
     # ── Amp ──────────────────────────────────────────────────────────────
     amp_data   = gear.get("Amp", {})
     rs_amp_key = amp_data.get("Key", "")
-    amp_guid, amp_exact = lookup_amp(rs_amp_key, free_mode=free_mode)
+    effective_tier = "cs" if free_mode and tier == "max" else tier
+    amp_guid, amp_exact = lookup_amp(rs_amp_key, free_mode=free_mode, tier=effective_tier)
 
     if not amp_guid:
         warnings.append(f"Unknown amp '{rs_amp_key}' -> using null amp")

@@ -527,79 +527,190 @@ async function _at5RenderStatus() {
     const outputs = [];
     if (_at5MidiAccess) _at5MidiAccess.outputs.forEach(o => outputs.push(o));
 
-    let html = `<div class="bg-dark-700/50 border border-gray-800/50 rounded-xl p-3 space-y-2">`;
-    html += bridgeUp
-        ? `<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-400 inline-block"></span><span class="text-green-400 text-xs font-semibold">Bridge Ready</span><span class="text-gray-600 text-xs">at5_midi_bridge.py · auto tone switching active</span></div>`
-        : `<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-yellow-500 inline-block"></span><span class="text-yellow-500 text-xs font-semibold">Bridge Offline</span><span class="text-gray-600 text-xs">Run at5_midi_bridge.py --midi-port "AXE IO"</span></div>`;
+    const card = 'background:rgba(55,65,81,0.3);border:1px solid rgba(31,41,55,0.5);border-radius:12px;padding:14px;margin-bottom:10px;';
+    const row  = 'display:flex;align-items:center;gap:8px;margin-bottom:6px;';
+    const dot  = (col) => `<span style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0;display:inline-block;"></span>`;
+    let html = '';
+
+    // ── Bridge status + output selector ──────────────────────────────────
+    html += `<div style="${card}">`;
+    html += `<div style="${row}">
+        ${dot(bridgeUp ? '#4ade80' : '#eab308')}
+        <span style="font-size:0.75rem;font-weight:600;color:${bridgeUp ? '#4ade80' : '#eab308'};">
+            ${bridgeUp ? 'Bridge Ready' : 'Bridge Offline'}
+        </span>
+        <span style="font-size:0.7rem;color:#4b5563;">
+            ${bridgeUp ? 'MIDI bridge connected · auto tone switching active' : 'Start at5_midi_bridge.py on Windows host'}
+        </span>
+    </div>`;
 
     if (hasInternal || outputs.length || bridgeUp) {
-        html += `<div class="flex items-center gap-3"><span class="text-xs text-gray-500">Output</span>
+        html += `<div style="${row}">
+            <span style="font-size:0.7rem;color:#6b7280;flex-shrink:0;">MIDI output</span>
             <select id="at5-device-select" onchange="localStorage.setItem('at5_output_id',this.value);_at5PickOutput()"
-                class="bg-dark-600 border border-gray-700 rounded-lg px-2 py-1 text-xs text-gray-300 outline-none">`;
+                style="background:#1f2937;border:1px solid #374151;border-radius:6px;padding:3px 8px;font-size:0.75rem;color:#d1d5db;flex:1;">`;
         if (hasInternal) html += `<option value="internal" ${savedId==='internal'?'selected':''}>Internal VST (Desktop)</option>`;
-        if (bridgeUp)    html += `<option value="bridge"   ${savedId==='bridge'||(!hasInternal&&!savedId)?'selected':''}>Bridge → AT5 (Docker)</option>`;
+        if (bridgeUp)    html += `<option value="bridge" ${savedId==='bridge'||(!hasInternal&&!savedId)?'selected':''}>Bridge → AT5 (Docker)</option>`;
         for (const o of outputs) html += `<option value="${o.id}" ${savedId===o.id?'selected':''}>${esc(o.name)}</option>`;
-        html += `</select></div>`;
+        html += `</select>
+            <button onclick="_at5TestMidi()" style="font-size:0.7rem;padding:3px 10px;background:transparent;border:1px solid #374151;border-radius:6px;color:#9ca3af;cursor:pointer;" title="Send PC 0 to verify MIDI is reaching AT5">Test</button>
+        </div>`;
     }
 
-    html += `<div class="text-xs ${pcCount>0?'text-gray-500':'text-yellow-600'}">PC table: ${pcCount > 0 ? `${pcCount} tones mapped` : 'loading…'}</div>`;
-    // Live slot status
+    // Manual PC send
+    html += `<div style="${row};margin-top:4px;">
+        <span style="font-size:0.7rem;color:#6b7280;flex-shrink:0;">Send PC</span>
+        <input type="number" id="at5-test-prog" min="0" max="127" value="0"
+            style="width:54px;background:#1f2937;border:1px solid #374151;border-radius:6px;padding:3px 6px;font-size:0.75rem;color:#d1d5db;text-align:center;">
+        <span style="font-size:0.7rem;color:#4b5563;">(0–127)</span>
+        <button onclick="at5TestSend()" style="font-size:0.7rem;padding:3px 10px;background:transparent;border:1px solid #374151;border-radius:6px;color:#9ca3af;cursor:pointer;">Send</button>
+        <span style="font-size:0.7rem;color:#4b5563;">AT5 preset # = PC + 1</span>
+    </div>`;
+    html += `</div>`;
+
+    // ── PC table status ───────────────────────────────────────────────────
+    html += `<div style="font-size:0.7rem;color:${pcCount>0?'#6b7280':'#ca8a04'};margin-bottom:8px;">
+        PC table: ${pcCount > 0 ? `${pcCount} tones mapped` : 'loading…'}
+    </div>`;
+
+    // ── Live slots ────────────────────────────────────────────────────────
     if (_at5LiveEnabled) {
-        const liveCount = Object.keys(_at5LiveSlots).length;
-        const liveLabel = liveCount > 0
-            ? `${liveCount} tones (PC ${LIVE_SLOT_START}–${LIVE_SLOT_START+liveCount-1})`
-            : (_at5LiveLastFile ? 'converting…' : 'idle — loads on next song');
-        html += `<div class="text-xs ${liveCount > 0 ? 'text-green-500' : 'text-gray-500'}">Live slots: ${liveLabel}</div>`;
+        const liveSlots = Object.entries(_at5LiveSlots);
+        const liveCount = liveSlots.length;
+        html += `<div style="${card}">`;
+        html += `<div style="font-size:0.7rem;font-weight:600;color:#9ca3af;margin-bottom:8px;">
+            Live Slots
+            <span style="font-weight:400;color:#4b5563;margin-left:6px;">
+                ${liveCount > 0 ? `${liveCount} tones loaded` : (_at5LiveLastFile ? 'converting…' : 'idle — load a song')}
+            </span>
+        </div>`;
+
         if (liveCount > 0) {
-            html += `<div class="text-xs text-gray-600 pl-2">` +
-                Object.entries(_at5LiveSlots).map(([k,pc]) => `PC${pc}: ${esc(k)}`).join(' · ') +
-                `</div>`;
-            // Save-back button — saves dialled-in AT5 preset back to song folder
-            html += `<div class="mt-2">
-                <button onclick="_at5SaveBack('*')" class="text-xs px-2 py-1 border border-gray-700 rounded hover:border-orange-500 hover:text-orange-400 transition">
-                    💾 Save current presets back to song
+            liveSlots.forEach(([toneKey, pc]) => {
+                html += `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(31,41,55,0.4);">
+                    <span style="font-size:0.7rem;color:#f97316;font-family:monospace;flex-shrink:0;width:36px;">PC${pc+1}</span>
+                    <span style="font-size:0.75rem;color:#d1d5db;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(toneKey)}">${esc(toneKey)}</span>
+                    <button onclick="_at5SendPC(${pc}, []); this.textContent='✓'; setTimeout(()=>this.textContent='▶',1000);"
+                        style="font-size:0.7rem;padding:2px 8px;background:transparent;border:1px solid #374151;border-radius:4px;color:#6b7280;cursor:pointer;flex-shrink:0;"
+                        title="Audition this tone in AT5">▶</button>
+                    <button onclick="_at5SaveBack('${esc(toneKey)}')"
+                        style="font-size:0.7rem;padding:2px 8px;background:transparent;border:1px solid #374151;border-radius:4px;color:#6b7280;cursor:pointer;flex-shrink:0;"
+                        title="Save this preset back to the song folder">💾</button>
+                </div>`;
+            });
+
+            // Save-all button + explanation
+            html += `<div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(31,41,55,0.4);">
+                <button onclick="_at5SaveBack('*')"
+                    style="font-size:0.75rem;padding:5px 14px;background:transparent;border:1px solid #374151;border-radius:6px;color:#9ca3af;cursor:pointer;">
+                    💾 Save all presets back to song
                 </button>
-                <span class="text-xs text-gray-600 ml-2">Persists your AT5 edits with this song</span>
+                <div style="font-size:0.7rem;color:#4b5563;margin-top:6px;line-height:1.5;">
+                    Copies the current AT5 preset files beside this song file so your edits
+                    load automatically next time. Dial in a tone in AT5, then save it back here.
+                    Individual 💾 buttons save one tone; the button above saves all.
+                </div>
             </div>`;
         }
+        html += `</div>`;
     }
-    html += `</div>`;
+
     el.innerHTML = html;
-    document.getElementById('at5-test')?.classList.remove('hidden');
+}
+
+async function _at5TestMidi() {
+    // Send PC 0 as a quick connectivity check
+    await _at5SendPC(0, []);
+    const btn = document.querySelector('button[onclick="_at5TestMidi()"]');
+    if (btn) { btn.textContent = '✓ PC0 sent'; setTimeout(() => btn.textContent = 'Test', 1500); }
 }
 
 // ── Tone browser ───────────────────────────────────────────────────────────
 async function at5SearchSongs() {
     const q = document.getElementById('at5-search')?.value.trim();
     if (!q) return;
-    const res = await fetch(`/api/songs?q=${encodeURIComponent(q)}&limit=10`)
-        .then(r => r.json()).catch(() => ({ songs: [] }));
+    const fmt = document.getElementById('at5-search-format')?.value || '';
+    const url = fmt
+        ? `/api/library?q=${encodeURIComponent(q)}&page=0&size=20&sort=artist&format=${fmt}`
+        : `/api/library?q=${encodeURIComponent(q)}&page=0&size=20&sort=artist`;
+    const res = await fetch(url).then(r => r.json()).catch(() => ({ songs: [] }));
     const container = document.getElementById('at5-search-results');
     if (!container) return;
     if (!res.songs?.length) {
-        container.innerHTML = `<p class="text-sm text-gray-600">No songs found.</p>`; return;
+        container.innerHTML = `<p style="font-size:0.875rem;color:#6b7280;">No songs found.</p>`; return;
     }
-    container.innerHTML = res.songs.map(s => `
-        <button onclick="at5BrowseSong(${JSON.stringify(s.filename)}, ${JSON.stringify(s.title||s.filename)}, ${JSON.stringify(s.artist||'')})"
-            class="w-full text-left bg-dark-700 hover:bg-dark-600 border border-gray-800 rounded-xl px-4 py-3 transition">
-            <span class="text-sm text-white">${esc(s.title||s.filename)}</span>
-            <span class="text-xs text-gray-500 ml-2">${esc(s.artist||'')}</span>
+    // Store song data in a map keyed by index to avoid inline JSON escaping issues
+    window._at5SearchResults = res.songs;
+    container.innerHTML = res.songs.map((s, i) => `
+        <button data-song-index="${i}"
+            style="display:block;width:100%;text-align:left;background:#374151;border:1px solid #1f2937;border-radius:12px;padding:10px 16px;margin-bottom:6px;cursor:pointer;">
+            <span style="font-size:0.875rem;color:#fff;">${esc(s.title||s.filename)}</span>
+            <span style="font-size:0.75rem;color:#6b7280;margin-left:8px;">${esc(s.artist||'')}</span>
+            <span style="font-size:0.7rem;color:#9ca3af;float:right;background:#1f2937;padding:2px 6px;border-radius:4px;">${esc(s.format||s.filename.split('/')[0]||'')}</span>
         </button>`).join('');
+    container.querySelectorAll('button[data-song-index]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const s = window._at5SearchResults[parseInt(btn.dataset.songIndex)];
+            if (s) at5BrowseSong(s.filename, s.title||s.filename, s.artist||'');
+        });
+    });
 }
 
 async function at5BrowseSong(filename, title, artist) {
     document.getElementById('at5-search-results').innerHTML = '';
     const titleEl = document.getElementById('at5-editor-title');
     if (titleEl) titleEl.textContent = `${artist ? artist + ' — ' : ''}${title}`;
-    document.getElementById('at5-editor')?.classList.remove('hidden');
+    const editorEl = document.getElementById('at5-editor');
+    if (editorEl) editorEl.style.display = '';
 
     await _at5LoadPcTable();
-    const tones = await _at5FetchSchedule(filename);
     const container = document.getElementById('at5-mappings');
     if (!container) return;
+    container.innerHTML = `<p style="font-size:0.875rem;color:#6b7280;padding:12px 0;">Loading...</p>`;
+
+    // Try CDLC match first (PSARC files), fall back to RS+ scrape schedule
+    const decoded = decodeURIComponent(filename);
+    const isCdlc = decoded.toLowerCase().endsWith('.psarc') || decoded.toLowerCase().endsWith('.sloppak');
+    let tones = [];
+
+    if (isCdlc) {
+        // Use match-cdlc-tones endpoint — extracts tones directly from PSARC
+        try {
+            const r = await fetch(`/api/plugins/at5_tone/match-cdlc-tones/${encodeURIComponent(decoded)}?skip_scrape=true`, {
+                signal: AbortSignal.timeout(10000),
+            });
+            if (r.ok) {
+                const d = await r.json();
+                if (d.matches && Object.keys(d.matches).length) {
+                    // Convert matches dict to tones array format
+                    tones = Object.entries(d.matches).map(([key, m]) => ({
+                        key,
+                        startTime: null,
+                        pc: m.pc,
+                        preset_name: m.preset || '',
+                        match_type: m.match_type || 'unknown',
+                        in_top128: m.match_type === 'exact',
+                        cc_adjustments: m.cc_adjustments || [],
+                        arrangements: m.arrangements || [],
+                    }));
+                }
+            }
+        } catch(e) {}
+    }
+
+    // Fallback: RS+ scrape schedule (for loose folder / sloppak songs)
+    if (!tones.length) {
+        tones = await _at5FetchSchedule(filename);
+        tones = tones.map(t => {
+            const entry = _at5Lookup(t.key);
+            return { ...t, pc: entry?.pc, preset_name: entry?.preset_name || '',
+                     match_type: entry ? (entry.in_top128 ? 'exact' : 'adjusted') : 'unmapped',
+                     in_top128: entry?.in_top128, cc_adjustments: entry?.cc_adjustments || [] };
+        });
+    }
 
     if (!tones.length) {
-        container.innerHTML = `<p class="text-sm text-gray-600 py-3">No tone schedule found — may be a single-tone song, or a CDLC with no explicit tone change events.</p>`;
+        container.innerHTML = `<p style="font-size:0.875rem;color:#6b7280;padding:12px 0;">No tones found — PSARC may not be readable from inside Slopsmith, or this is a single-tone song with no explicit changes.</p>`;
         return;
     }
 
@@ -610,30 +721,54 @@ async function at5BrowseSong(filename, title, artist) {
         if (!seen.has(t.key)) { seen.add(t.key); unique.push(t); }
     }
 
-    container.innerHTML = `
-        <div class="grid grid-cols-[60px_1fr_80px_100px_80px_60px] gap-x-3 text-xs text-gray-600 font-semibold px-2 mb-1">
-            <span>Time</span><span>Tone Key</span><span>Preset</span><span>Name</span><span>Type</span><span></span>
-        </div>` +
-        tones.map(tone => {
-            const entry = _at5Lookup(tone.key);
-            const pcNum = entry ? entry.pc + 1 : null;
-            const type = !entry ? 'unmapped'
-                : entry.in_top128 ? 'direct'
-                : entry.cc_adjustments?.length ? 'CC adj'
-                : 'template';
-            const typeColor = !entry ? 'text-red-500' : entry.in_top128 ? 'text-green-500' : 'text-blue-400';
-            return `
-            <div class="grid grid-cols-[60px_1fr_80px_100px_80px_60px] gap-x-3 items-center py-2 border-b border-gray-800/40 hover:bg-dark-700/30 px-2 rounded group">
-                <span class="text-xs text-gray-600 font-mono">${tone.startTime?.toFixed(1) ?? '0.0'}s</span>
-                <span class="text-xs font-semibold text-white truncate">${esc(tone.key)}</span>
-                <span class="text-xs text-orange-400 font-mono">${pcNum ? `#${pcNum}` : '—'}</span>
-                <span class="text-xs text-gray-500 truncate">${esc(entry?.preset_name ?? '')}</span>
-                <span class="text-xs ${typeColor}">${type}</span>
-                ${pcNum ? `<button onclick="_at5SendPC(${pcNum-1}, ${JSON.stringify(entry?.cc_adjustments||[])})"
-                    class="opacity-0 group-hover:opacity-100 text-xs border border-gray-700 hover:border-orange-500 text-gray-400 hover:text-orange-400 rounded px-2 py-0.5 transition">▶</button>`
-                    : `<span></span>`}
+    const hdStyle = 'display:grid;grid-template-columns:60px 1fr 80px 110px 70px 70px 50px;gap:0 8px;font-size:0.7rem;color:#6b7280;font-weight:600;padding:0 8px 6px 8px;';
+    const rowStyle = 'display:grid;grid-template-columns:60px 1fr 80px 110px 70px 70px 50px;gap:0 8px;align-items:center;padding:8px;border-bottom:1px solid rgba(31,41,55,0.4);';
+    container.innerHTML =
+        `<div style="${hdStyle}"><span>Time</span><span>Tone Key</span><span>PC#</span><span>Preset</span><span>Arr.</span><span>Type</span><span></span></div>` +
+        tones.map((tone, ti) => {
+            // tones now have pc/match_type/preset_name directly (from cdlc endpoint)
+            // or we fall back to _at5Lookup for RS+ scrape tones
+            const livePC = _at5LiveSlots[tone.key];
+            const pcNum = livePC !== undefined ? livePC + 1
+                        : tone.pc !== undefined ? tone.pc + 1
+                        : null;
+            const isLive = livePC !== undefined;
+            const matchType = tone.match_type || 'unknown';
+            const type = isLive ? 'live'
+                : matchType === 'exact' ? 'direct'
+                : matchType === 'adjusted' || matchType === 'same_amp' ? 'CC adj'
+                : matchType === 'unmapped' ? 'unmapped'
+                : matchType;
+            const typeColor = !pcNum ? '#ef4444'
+                : isLive ? '#22c55e'
+                : matchType === 'exact' ? '#22c55e'
+                : '#60a5fa';
+            const presetName = tone.preset_name || '';
+            const ccAdj = tone.cc_adjustments || [];
+            const playBtn = pcNum
+                ? `<button data-pc="${pcNum-1}" data-cc='${JSON.stringify(ccAdj)}'
+                    style="font-size:0.7rem;border:1px solid #374151;border-radius:4px;padding:2px 6px;background:transparent;color:#6b7280;cursor:pointer;">▶</button>`
+                : '<span></span>';
+            return `<div style="${rowStyle}">
+                <span style="font-size:0.7rem;color:#6b7280;font-family:monospace;">${tone.startTime?.toFixed(1) ?? '0.0'}s</span>
+                <span style="font-size:0.75rem;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(tone.key)}">${esc(tone.key)}</span>
+                <span style="font-size:0.75rem;color:#f97316;font-family:monospace;">${pcNum ? '#'+pcNum : '—'}</span>
+                <span style="font-size:0.7rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(presetName)}</span>
+                <span style="font-size:0.7rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc((tone.arrangements||[]).join(', '))}">${esc((tone.arrangements||[]).join(' / '))}</span>
+                <span style="font-size:0.7rem;color:${typeColor};">${type}</span>
+                ${playBtn}
             </div>`;
         }).join('');
+    // Wire play buttons after render
+    container.querySelectorAll('button[data-pc]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const pc = parseInt(btn.dataset.pc);
+            const cc = JSON.parse(btn.dataset.cc || '[]');
+            _at5SendPC(pc, cc);
+            btn.textContent = '✓';
+            setTimeout(() => btn.textContent = '▶', 1000);
+        });
+    });
 }
 
 function at5TestSend() {
@@ -643,31 +778,54 @@ function at5TestSend() {
 
 // ── Tab switcher ───────────────────────────────────────────────────────────
 // ── Settings ──────────────────────────────────────────────────────────────
+function at5SetPrefire(ms) {
+    const val = Math.max(0, Math.min(1000, parseInt(ms) || 0));
+    AT5_PREFIRE_MS = val / 1000;  // convert ms to seconds for internal use
+    localStorage.setItem('at5_prefire_ms', AT5_PREFIRE_MS);
+    const label = document.getElementById('at5-prefire-label');
+    if (label) label.textContent = `${val} ms`;
+    const slider = document.getElementById('at5-prefire-slider');
+    if (slider) slider.value = val;
+}
+
 async function _at5LoadSettings() {
     try {
         const r = await fetch('/api/plugins/at5_tone/settings');
         if (!r.ok) return;
         const data = await r.json();
+        const tier = data.tier || (data.free_mode ? 'cs' : 'max');
+        const radio = document.getElementById(`at5-tier-${tier}`);
+        if (radio) radio.checked = true;
         const cb = document.getElementById('at5-free-mode-checkbox');
-        if (cb) cb.checked = !!data.free_mode;
+        if (cb) cb.checked = (tier === 'cs');
     } catch(e) {}
+    // Restore prefire slider from localStorage
+    const prefireMs = Math.round(AT5_PREFIRE_MS * 1000);
+    const slider = document.getElementById('at5-prefire-slider');
+    const label  = document.getElementById('at5-prefire-label');
+    if (slider) slider.value = prefireMs;
+    if (label)  label.textContent = `${prefireMs} ms`;
 }
 
-async function at5SetFreeMode(enabled) {
+async function at5SetTier(tier) {
     try {
         const r = await fetch('/api/plugins/at5_tone/settings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ free_mode: enabled }),
+            body: JSON.stringify({ tier }),
         });
         const data = await r.json();
-        console.log(`[AT5] Free mode: ${data.free_mode}`);
+        console.log(`[AT5] Tier: ${data.tier}`);
         Object.keys(_at5LiveSlots).forEach(k => delete _at5LiveSlots[k]);
         _at5LiveLastFile = null;
         _at5RenderStatus();
     } catch(e) {
         console.warn('[AT5] Settings error:', e.message);
     }
+}
+
+async function at5SetFreeMode(enabled) {
+    return at5SetTier(enabled ? 'cs' : 'max');
 }
 
 function at5ShowTab(tab) {
@@ -704,8 +862,11 @@ window._at5SetPrefire    = (v) => { AT5_PREFIRE_MS = parseFloat(v) || 0; };
 window._at5LiveSlots     = _at5LiveSlots;
 window._at5RequestLiveConvert = _at5RequestLiveConvert;
 window._at5SaveBack          = _at5SaveBack;
+window._at5TestMidi          = _at5TestMidi;
 window._at5LoadSettings      = _at5LoadSettings;
+window.at5SetPrefire         = at5SetPrefire;
 window.at5SetFreeMode        = at5SetFreeMode;
+window.at5SetTier            = at5SetTier;
 
 // Reset AT5 to PC 0 when song stops
 (function() {

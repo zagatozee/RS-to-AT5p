@@ -305,8 +305,9 @@ LIVE_SLOT_START  = 120
 LIVE_SLOT_COUNT  = 8
 LIVE_SLOT_PREFIX = "AT5_LIVE"
 
-# Setting: limit amp selection to AT5 CS free version models only
-_at5_free_mode = False
+# AT5 version tier: "cs" | "se" | "at5" | "max"
+_at5_tier = "max"  # default: full library, no constraints
+_at5_free_mode = False  # legacy alias — True maps to tier="cs"
 
 _live_state = {
     "song":       None,
@@ -528,6 +529,7 @@ def _write_live_slots(tones, presets_dir, slot_offset=0):
                     slot_path,   # source_path (logging only)
                     tmp_path,    # output_dir
                     free_mode=_at5_free_mode,
+                    tier=_at5_tier,
                 )
                 written = list(tmp_path.glob("*.at5p"))
                 if written:
@@ -558,32 +560,45 @@ def _write_live_slots(tones, presets_dir, slot_offset=0):
 # user edits made in AT5 persist across sessions.
 
 
-def _song_preset_dir(psarc_path: Path) -> Path:
-    """Return the at5/ subfolder next to the PSARC for song-local presets."""
-    return psarc_path.parent / "at5"
+def _song_preset_dir(psarc_path: Path, free_mode: bool = None) -> Path:
+    """
+    Return the song-local preset folder next to the PSARC.
+    Uses at5/free/ or at5/max/ subfolder based on free_mode setting.
+    This ensures cached presets from one mode never contaminate the other.
+    """
+    if free_mode is None:
+        free_mode = _at5_free_mode
+    mode = "free" if free_mode else "max"
+    if psarc_path.is_dir():
+        return psarc_path / "at5" / mode
+    elif psarc_path.suffix == ".sloppak":
+        return psarc_path.parent / psarc_path.stem / "at5" / mode
+    else:
+        return psarc_path.parent / psarc_path.stem / "at5" / mode
 
 
-def _load_song_presets(psarc_path: Path) -> dict:
+def _load_song_presets(psarc_path: Path, free_mode: bool = None) -> dict:
     """
-    Return dict of { tone_key: Path } for any .at5p files already stored
-    next to this PSARC.  Returns empty dict if folder doesn't exist yet.
+    Return dict of { tone_key: Path } for any .at5p files stored for this song.
+    Looks in the mode-specific subfolder (at5/free/ or at5/max/).
+    Returns empty dict if folder doesn't exist yet.
     """
-    d = _song_preset_dir(psarc_path)
+    d = _song_preset_dir(psarc_path, free_mode)
     if not d.exists():
         return {}
     return {p.stem: p for p in d.glob("*.at5p")}
 
 
 def _seed_song_presets(psarc_path: Path, slot_map: dict,
-                        presets_dir: Path) -> dict:
+                        presets_dir: Path, free_mode: bool = None) -> dict:
     """
     After live-convert, copy the generated live slot files into the
-    song-local at5/ folder so they persist and can be user-edited.
+    song-local at5/<mode>/ folder so they persist and can be user-edited.
     Returns { tone_key: dest_path } for files written.
     Skips any tone that already has a file (preserves user edits).
     """
-    song_dir = _song_preset_dir(psarc_path)
-    song_dir.mkdir(exist_ok=True)
+    song_dir = _song_preset_dir(psarc_path, free_mode)
+    song_dir.mkdir(parents=True, exist_ok=True)
     seeded = {}
     for tone_key, pc_num in slot_map.items():
         dest = song_dir / f"{tone_key}.at5p"
@@ -616,7 +631,7 @@ def _copy_song_presets_to_slots(song_presets: dict, slot_map_order: list,
         slot_file = presets_dir / f"{LIVE_SLOT_PREFIX}_{i:02d}.at5p"
         shutil.copy2(song_presets[tone_key], slot_file)
         result[tone_key] = pc_num
-        log.info(f"[AT5 Live] Slot {i} PC{pc_num}: {tone_key} <- song-local preset")
+        log.info(f"[AT5 Live] Slot {i} PC{pc_num}: {tone_key} <- song-local {('free' if _at5_free_mode else 'max')} preset")
     return result
 
 # ── Plugin setup ───────────────────────────────────────────────────────────
@@ -684,9 +699,14 @@ def setup(app, context):
         dlc_dir = context.get("get_dlc_dir", lambda: None)()
         psarc_path = None
         if dlc_dir:
-            p = (Path(dlc_dir) / filename).resolve()
-            if p.exists():
-                psarc_path = p
+            parts = filename.replace('\\', '/').split('/')
+            candidates = [Path(dlc_dir) / filename]
+            for i in range(len(parts)):
+                candidates.append(Path(dlc_dir) / '/'.join(parts[i:]))
+            for c in candidates:
+                if c.resolve().exists():
+                    psarc_path = c.resolve()
+                    break
         if not psarc_path:
             return {"status": "error", "message": f"PSARC not found: {filename}"}
 
@@ -765,22 +785,31 @@ def setup(app, context):
     @app.get("/api/plugins/at5_tone/settings")
     def get_settings():
         return {
-            "free_mode": _at5_free_mode,
-            "free_mode_amps": list(mod.AT5_CS_AMP_GUIDS.keys()) if hasattr(mod, "AT5_CS_AMP_GUIDS") else [],
+            "tier":      _at5_tier,
+            "free_mode": _at5_tier == "cs",  # legacy compat
         }
 
     @app.post("/api/plugins/at5_tone/settings")
     async def update_settings(request: Request):
-        global _at5_free_mode
+        global _at5_tier, _at5_free_mode
         try:
             body = await request.json()
         except Exception:
             body = {}
-        if "free_mode" in body:
-            _at5_free_mode = bool(body["free_mode"])
-            log.info(f"[AT5] free_mode set to {_at5_free_mode}")
+        if "tier" in body:
+            new_tier = body["tier"]
+            if new_tier in ("cs", "se", "at5", "max"):
+                _at5_tier = new_tier
+                _at5_free_mode = (_at5_tier == "cs")
+                log.info(f"[AT5] tier set to {_at5_tier}")
+                _live_state.update({"song": None, "slots": {}, "warnings": [], "elapsed_ms": 0})
+        elif "free_mode" in body:
+            # Legacy boolean support
+            _at5_tier = "cs" if bool(body["free_mode"]) else "max"
+            _at5_free_mode = (_at5_tier == "cs")
+            log.info(f"[AT5] tier set to {_at5_tier} (via free_mode)")
             _live_state.update({"song": None, "slots": {}, "warnings": [], "elapsed_ms": 0})
-        return {"status": "ok", "free_mode": _at5_free_mode}
+        return {"status": "ok", "tier": _at5_tier, "free_mode": _at5_free_mode}
 
     @app.get("/api/plugins/at5_tone/live_status")
     def live_status():
@@ -789,6 +818,9 @@ def setup(app, context):
             "slot_start":  LIVE_SLOT_START,
             "slot_count":  LIVE_SLOT_COUNT,
             "presets_dir": str(_live_presets_dir) if _live_presets_dir else None,
+            "free_mode":   _at5_free_mode,
+            "tier":        _at5_tier,
+            "cache_mode":  _at5_tier,
         }
 
     @app.post("/api/plugins/at5_tone/preset/save-back")
@@ -818,8 +850,8 @@ def setup(app, context):
         if not psarc_path.exists():
             return {"status": "error", "message": f"PSARC not found: {filename}"}
 
-        song_dir = _song_preset_dir(psarc_path)
-        song_dir.mkdir(exist_ok=True)
+        song_dir = _song_preset_dir(psarc_path)  # uses current free_mode
+        song_dir.mkdir(parents=True, exist_ok=True)
 
         tone_key   = body.get("tone_key", "*")
         slots      = _live_state.get("slots", {})
@@ -916,7 +948,7 @@ def setup(app, context):
                             if written:
                                 slot_map[tk] = LIVE_SLOT_START + i
                                 dest = _song_preset_dir(psarc_path) / f"{tk}.at5p"
-                                _song_preset_dir(psarc_path).mkdir(exist_ok=True)
+                                _song_preset_dir(psarc_path).mkdir(parents=True, exist_ok=True)
                                 if not dest.exists():
                                     shutil.copy2(written[0], dest)
                                 for f in tmp_path.glob("*.at5p"):
@@ -1147,7 +1179,7 @@ def _setup_cdlc_routes(app, context):
     """Register CDLC tone matching endpoints. Called from setup()."""
 
     @app.get("/api/plugins/at5_tone/match-cdlc-tones/{filename:path}")
-    def match_cdlc_tones(filename: str):
+    def match_cdlc_tones(filename: str, skip_scrape: bool = False):
         """For a PSARC/CDLC file, read its tone GearLists and find
         the best AT5 PC match for each tone key."""
         table = _get_table()
@@ -1155,8 +1187,9 @@ def _setup_cdlc_routes(app, context):
             return {"matches": {}, "error": "PC table not ready"}
 
         # Load tone_data (amp keys) from our scrape for matching
+        # skip_scrape=True skips this expensive scan (used by Tone Browser)
         td = {}
-        if _songs_path:
+        if _songs_path and not skip_scrape:
             sp = Path(_songs_path)
             for tf in list(sp.rglob("tone_*.json"))[:5000]:  # sample
                 try:
@@ -1178,10 +1211,24 @@ def _setup_cdlc_routes(app, context):
 
         import urllib.parse
         decoded = urllib.parse.unquote(filename)
-        psarc_path = (Path(dlc_dir) / decoded).resolve()
+        # Try the path as-is, then with common prefix variations
+        psarc_path = None
+        candidates = [
+            Path(dlc_dir) / decoded,
+            Path(dlc_dir) / decoded.lstrip('/'),
+        ]
+        # Also try stripping leading path components (Songs/, CDLC/ etc)
+        parts = decoded.replace('\\', '/').split('/')
+        for i in range(len(parts)):
+            candidates.append(Path(dlc_dir) / '/'.join(parts[i:]))
 
-        if not psarc_path.exists():
-            return {"matches": {}, "error": f"File not found: {decoded}"}
+        for c in candidates:
+            if c.resolve().exists():
+                psarc_path = c.resolve()
+                break
+
+        if not psarc_path:
+            return {"matches": {}, "error": f"File not found: {decoded} (tried {len(candidates)} paths)"}
 
         if psarc_path.name.lower().endswith(".sloppak") or psarc_path.is_dir():
             return {"matches": {}, "error": "sloppak not supported for CDLC matching"}
@@ -1194,6 +1241,9 @@ def _setup_cdlc_routes(app, context):
             return {"matches": {}, "error": str(e)}
 
         matches = {}
+        # Track which arrangements each tone key appears in
+        tone_arrangements = {}
+
         for path, data in sorted(files.items()):
             if not path.endswith(".json"):
                 continue
@@ -1208,7 +1258,14 @@ def _setup_cdlc_routes(app, context):
                     continue
                 for tone in attrs.get("Tones", []):
                     tone_key = tone.get("Key", "")
-                    if not tone_key or tone_key in matches:
+                    if not tone_key:
+                        continue
+                    # Track arrangement membership
+                    if tone_key not in tone_arrangements:
+                        tone_arrangements[tone_key] = []
+                    if arr and arr not in tone_arrangements[tone_key]:
+                        tone_arrangements[tone_key].append(arr)
+                    if tone_key in matches:
                         continue
                     # Already in PC table — exact match
                     if tone_key in table:
@@ -1230,5 +1287,9 @@ def _setup_cdlc_routes(app, context):
                             "match_type":     match_type,
                             "cc_adjustments": cc_adj,
                         }
+
+        # Add arrangement info to each match
+        for tone_key in matches:
+            matches[tone_key]["arrangements"] = tone_arrangements.get(tone_key, [])
 
         return {"matches": matches, "total": len(matches)}
