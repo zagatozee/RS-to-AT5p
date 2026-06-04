@@ -1,14 +1,44 @@
 # Slopsmith AT5 Tone Switcher — Technical Handoff
-*May 2026*
+*June 2026 — v0.4.0*
 
 ---
 
 ## Status
 
-Working end-to-end. Live convert confirmed on CDLC songs. CC knob adjustments
-confirmed firing. AT5 switching presets in response to MIDI PC messages.
-Song-local preset store implemented (presets seed to `at5/` folder beside each PSARC).
-Save-back endpoint implemented (user AT5 edits persist back to song folder).
+Working end-to-end. Live convert confirmed on CDLC songs. Four-tier AT5 version
+system implemented (CS/SE/AT5/MAX). Global noise gate working. Tone Browser
+fixed and functional. Status tab rebuilt with per-slot controls. Save-back
+working. Path resolution fixed for updated docker-compose layout.
+
+---
+
+## What's new in v0.4.0
+
+- **Four-tier AT5 version selector** (CS/SE/AT5/MAX) replaces free mode checkbox.
+  Gear lists verified against IK official PDF v5.0.3. Each tier uses a separate
+  cache subfolder (`at5/cs/`, `at5/se/`, `at5/at5/`, `at5/max/`) to prevent
+  cross-tier cache contamination.
+- **Global noise gate** — checkbox in Settings tab, inserts AT5 Noise Gate at
+  pre-amp stomp slot 0, shifting other effects down. Available all tiers.
+- **Status tab rebuilt** — per-slot ▶ audition and 💾 save-back buttons, MIDI
+  output selector with Test button, manual PC send input, save-back explanation.
+- **MIDI trigger offset slider** (0–1000ms) in Settings tab. Fires preset changes
+  ahead of the chart event. Persists in localStorage.
+- **Tone Browser fixed** — search now works (/api/library endpoint), format
+  filter dropdown, clickable results, arrangement column, ▶ per tone row.
+- **Path resolution fixed** — `match-cdlc-tones` and `live_convert` now try
+  multiple path candidates to handle Songs/ subdirectory layout.
+- **AT5 screen rendering fixed** — removed outer wrapper div from screen.html
+  (Slopsmith now creates it, was causing duplicate DOM element / zero height).
+- **at5_midi_bridge.py** — added GET `/send_cc` and `/send_pc` endpoints for
+  testing CC/PC from browser or PowerShell without stopping the bridge.
+- **Amp mapping improvements** verified against IK PDF:
+  - Peavey/5150 → Metal Lead V in SE+
+  - Roland JC/Fender → Jazz Amp 120 in SE+
+  - Bogner/Diezel → German 34 in AT5+
+  - Silver Jubilee → Brit Silver in AT5+
+  - Ampeg/Aguilar → Solid State Bass Preamp all tiers
+  - Mesa Dual Rectifier → SLD 100 CS, Metal Lead V in SE+
 
 ---
 
@@ -19,108 +49,103 @@ Slopsmith (Docker)
   → playSong hook (screen.js)
   → _at5RequestLiveConvert()
       → POST /api/plugins/at5_tone/live_convert
-          1. Check <song_dir>/at5/<tone_key>.at5p  (song-local, user-edited)
+          1. Check <song_dir>/at5/<tier>/<tone_key>.at5p  (song-local, tier-specific)
           2. Fallback: extract PSARC → rs_to_at5.py → write to live slots
           3. Seed newly converted presets back to song-local folder
       → writes AT5_LIVE_00..07.at5p to AT5 Presets/Converted/
   → _at5StartScheduler()
       → highway.getToneChanges() [CDLC]
-        OR XML parse [RS+ scrape songs]
       → setInterval 100ms polling highway.getTime()
-      → _at5Lookup(): live slots first, PC table fallback
-      → HTTP POST → at5_midi_bridge.py (localhost:37432)
+      → _at5SendPC() → HTTP POST → at5_midi_bridge.py (localhost:37432)
       → winmm → MIDI OUT → cable loop → MIDI IN → AT5
 ```
 
 ---
 
-## Song-Local Preset Store
+## Module-Level State (routes.py)
 
-On first load of a PSARC, tones are live-converted and seeded to:
+```python
+_at5_tier       = "max"   # "cs" | "se" | "at5" | "max"
+_at5_free_mode  = False   # legacy alias — True maps to tier="cs"
+_at5_noise_gate = False   # global pre-amp noise gate
+_live_state     = {"song": None, "slots": {}, "warnings": [], ...}
 ```
-<psarc_dir>/<psarc_stem>/at5/<tone_key>.at5p
-```
-
-On subsequent loads, these files are copied directly to live slots (~1ms, no extraction).
-
-After dialling in a tone in AT5, click "Save current presets back to song" in the
-Status tab — copies the current live slot file back to the song-local folder,
-overwriting the auto-converted version. Those edits then load automatically every time.
-
-Sloppak layout: `<sloppak_stem>/at5/` beside the `.sloppak` file.
-Loose folder layout: `at5/` inside the loose folder.
-(Sloppak/loose extraction not yet implemented — PSARC only for now.)
 
 ---
 
-## Prescan (batch pre-conversion)
+## AT5 Version Tiers (from IK PDF v5.0.3)
 
+| Tier | Amps | Cabs | Stomps | Rack |
+|------|------|------|--------|------|
+| CS   | 6    | 7    | 10     | 6    |
+| SE   | 13   | 14   | 19     | 13   |
+| AT5  | 35   | 28   | 35     | 34   |
+| MAX  | 107  | 101  | full   | full |
+
+Song-local preset cache uses tier subfolder: `at5/<tier>/<tone_key>.at5p`
+
+---
+
+## Key Endpoints
+
+| Endpoint | Purpose |
+|----------|---------|
+| `POST /live_convert` | Check tier cache → live convert → seed back |
+| `GET/POST /settings` | tier, free_mode, noise_gate |
+| `POST /preset/save-back` | Copy live slot → song-local tier folder |
+| `GET /live_status` | Current slots, tier, cache_mode |
+| `GET /match-cdlc-tones/{filename}?skip_scrape=true` | Tone Browser PSARC lookup |
+
+---
+
+## at5_midi_bridge.py Endpoints
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /ping` | Health check, returns midi_port and ready status |
+| `GET /send_cc?cc=N&value=N[&channel=N]` | Send CC (for MIDI Learn testing) |
+| `GET /send_pc?program=N[&channel=N]` | Send PC (for testing) |
+| `POST /pc` | Send PC with full bank/channel control |
+| `POST /cc` | Send CC via POST |
+
+---
+
+## MIDI CC Map (confirmed via MIDI Learn + AT5 PRESET tab)
+
+Assigned via AT5 Control → Control Change → PRESET → Amp A → Brit 8000:
+
+| Parameter   | CC# |
+|------------|-----|
+| Sensitivity | 23  |
+| Presence    | 24  |
+| Bass        | 25  |
+| Middle      | 26  |
+| Treble      | 27  |
+| Master      | 28  |
+| PreAmp      | 29  |
+
+**Important:** CC assignments are stored in the AT5 project file
+(`RS_to_AT5_Converter_Midi_Mappings.at5proj`), NOT in settings.properties or
+the registry. Users must load this project file in AT5 to have CC control.
+The `externalPluginData` blob is IK-proprietary encoded — cannot be generated
+programmatically.
+
+---
+
+## Noise Gate
+
+```python
+NOISE_GATE_GUID     = "0455f997-43ca-4c9b-9269-286a19d10d48"
+NOISE_GATE_THRESHOLD = -50.0  # dB default
 ```
-POST /api/plugins/at5_tone/prescan          -- all PSARCs in DLC folder
-POST /api/plugins/at5_tone/prescan  {"filenames": ["song.psarc"]}
-GET  /api/plugins/at5_tone/prescan/status?job_id=<id>
-```
 
-Runs in background thread. Skips songs that already have a complete `at5/` folder.
-
----
-
-## Plugin Files
-
-### screen.js
-- `_at5RequestLiveConvert(filename)`: fires on song load, checks song-local first
-- `_at5SaveBack(toneKey)`: saves dialled-in AT5 preset back to song folder
-- `_at5StartScheduler(filename)`: retries highway.getToneChanges() up to 5x
-- `_at5Lookup(toneKey)`: live slots first, then PC table
-- Reset to PC 0 on song end (only if a tone was actually fired this session)
-
-### routes.py
-- `POST /live_convert`: song-local check → live convert → seed back
-- `POST /preset/save-back`: copy live slot → song-local store
-- `POST /prescan`: batch pre-convert all PSARCs (background thread)
-- `GET /prescan/status`: progress polling
-- `GET /live_status`: current slot assignments and source (song-local vs live-convert)
-- On startup: creates AT5_LIVE_00..07.at5p using real AT5P_TEMPLATE (not hand-rolled XML)
-
-### rs_to_at5.py
-- Must be in the plugin folder — routes.py imports it at runtime
-- Supports RS+ JSON, RS2014 GearList JSON, RS2014 `.tone2014.xml`
-- `_convert_tone_from_gearlist()`: shared assembly used by both CLI and live convert
-- DI tones: `DIBeforeAmp="1"`, amp muted, cab unmuted — correct AT5 routing
-- 42 amps, 68 pedals, 17 rack effects mapped; 0 misses on 179 RS2014 official tones
-
----
-
-## rs_to_at5.py Changes (this week)
-
-- `--rs2014-xml` flag: parse `.tone2014.xml` (WCF format from PSARC toolkit)
-- Added `Amp_BT15`, `Amp_GB38`, `DI_Amp_BassDriver` to AMP_MAP
-- Added 20 missing RS2014 cab variants (Ribbon/Condenser/OffAxis mic positions)
-- Added `Pedal_DigitalVerb`, `Pedal_Limiter` to EFFECT_MAP
-- Fixed DI tone routing: `DIBeforeAmp="1"` + cab unmuted (was silencing presets)
-- Refactored shared preset assembly into `_convert_tone_from_gearlist()`
-
----
-
-## CC Map (confirmed via MIDI Learn in AT5)
-
-| Knob | CC |
-|------|----|
-| Bass | 74 |
-| Middle | 75 |
-| Treble | 76 |
-| Presence | 77 |
-| Volume | 70 |
-| Master | 71 |
-| Gain | 72 |
-| Reverb | 91 |
-| Wharmonator | **not yet set** — MIDI Learn in AT5, then uncomment in KNOB_CC_MAP |
+Inserts at pre-amp stomp slot 0, shifts existing effects down. Last effect
+dropped if all 6 slots already occupied (extremely rare in RS tones). Available
+in all AT5 tiers (CS through MAX per IK PDF).
 
 ---
 
 ## Live Slot Config
-
-Defined in both `routes.py` and `screen.js` — keep in sync:
 
 ```python
 LIVE_SLOT_START  = 120
@@ -130,36 +155,18 @@ LIVE_SLOT_PREFIX = "AT5_LIVE"
 
 ---
 
-## Known Issues / To Do
+## Open Questions / Future Work
 
-1. **Wharmonator CC** — MIDI Learn in AT5, then set in `KNOB_CC_MAP` in routes.py
-2. **Sloppak/loose folder** — song-local preset store not yet wired for these formats
-3. **Settings panel prescan UI** — endpoint exists, no UI yet
-4. **AT5 screen display** — screen.html renders but may need further layout debugging
-   depending on Slopsmith version (confirmed working on 0.2.8-prerelease)
-5. **3dhighway plugin** — bare `catch {}` syntax bug; rename to `3dhighway_disabled`
-6. **Opening AT5 screen stops song** — Slopsmith core behaviour, unfixable from plugin
-
----
-
-## Slopsmith Plugin API Reference
-
-```javascript
-highway.getTime()           // audio-aligned time in seconds
-highway.getToneChanges()    // [{t, name}] — CDLC songs only
-highway.getToneBase()       // initial tone key string
-highway.getSongInfo()       // {title, artist, arrangement, duration, ...}
-highway.stop()              // stops playback (also called by showScreen)
-
-// plugin context (routes.py setup function)
-context["get_dlc_dir"]()    // Path to DLC/PSARC folder
-context["extract_meta"]     // function to extract PSARC metadata
-context["meta_db"]          // MetadataDB instance
-context["config_dir"]       // Path to plugin config directory
-```
-
-### Key behaviours
-- `showScreen(id)` stops audio if id !== 'player' — unavoidable from plugins
-- `window.playSong` is safe to monkey-patch
-- Plugin screen loaded from `screen.html` — must exist for nav entry to work
-- `plugin.json` must include `"routes": "routes.py"` for backend to load
+1. **Wharmonator CC** — needs MIDI Learn in AT5, then set in KNOB_CC_MAP
+2. **Sloppak/loose folder live convert** — song-local cache wired but live
+   extraction not yet implemented for these formats
+3. **AT5 CC map programmatic write** — CC assignments stored in opaque
+   `externalPluginData` blob in .at5proj file. Ship pre-configured project
+   file with plugin as workaround.
+4. **Soundshed Guitar integration** — developer has reached out. Need:
+   .gfxpreset format schema, programmatic preset switching method, Tone3000 API.
+5. **Pre-bake free/max presets into sloppaks** — plan to generate both
+   `at5/free/` and `at5/max/` preset folders for all songs and bundle with
+   sloppak packages.
+6. **Slopsmith plugin-tones integration** — RS2014 gear images available via
+   `GET /api/plugins/tones/song/{filename}`. Natural fit for Tone Browser display.

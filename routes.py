@@ -530,6 +530,7 @@ def _write_live_slots(tones, presets_dir, slot_offset=0):
                     tmp_path,    # output_dir
                     free_mode=_at5_free_mode,
                     tier=_at5_tier,
+                    noise_gate=_at5_noise_gate,
                 )
                 written = list(tmp_path.glob("*.at5p"))
                 if written:
@@ -791,7 +792,7 @@ def setup(app, context):
 
     @app.post("/api/plugins/at5_tone/settings")
     async def update_settings(request: Request):
-        global _at5_tier, _at5_free_mode
+        global _at5_tier, _at5_free_mode, _at5_noise_gate
         try:
             body = await request.json()
         except Exception:
@@ -809,7 +810,10 @@ def setup(app, context):
             _at5_free_mode = (_at5_tier == "cs")
             log.info(f"[AT5] tier set to {_at5_tier} (via free_mode)")
             _live_state.update({"song": None, "slots": {}, "warnings": [], "elapsed_ms": 0})
-        return {"status": "ok", "tier": _at5_tier, "free_mode": _at5_free_mode}
+        if "noise_gate" in body:
+            _at5_noise_gate = bool(body["noise_gate"])
+            log.info(f"[AT5] noise_gate set to {_at5_noise_gate}")
+        return {"status": "ok", "tier": _at5_tier, "free_mode": _at5_free_mode, "noise_gate": _at5_noise_gate}
 
     @app.get("/api/plugins/at5_tone/live_status")
     def live_status():

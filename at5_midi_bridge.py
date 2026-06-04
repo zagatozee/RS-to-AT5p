@@ -119,8 +119,24 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        if self.path == "/ping":
+        from urllib.parse import urlparse, parse_qs
+        parsed = urlparse(self.path)
+        qs = parse_qs(parsed.query)
+        if parsed.path == "/ping":
             self._json(200, {"ok": True, "midi_port": midi_port_name, "ready": True})
+        elif parsed.path == "/send_cc":
+            # GET /send_cc?cc=20&value=64&channel=0
+            cc  = int(qs.get("cc",  ["0"])[0])
+            val = int(qs.get("value", ["64"])[0])
+            ch  = int(qs.get("channel", ["0"])[0])
+            ok  = send_cc(ch, cc, val)
+            self._json(200 if ok else 500, {"ok": ok, "cc": cc, "value": val})
+        elif parsed.path == "/send_pc":
+            # GET /send_pc?program=120&channel=0
+            prog = int(qs.get("program", ["0"])[0])
+            ch   = int(qs.get("channel",  ["0"])[0])
+            ok   = send_pc(ch, 0, 0, prog)
+            self._json(200 if ok else 500, {"ok": ok, "program": prog})
         else:
             self._json(404, {"error": "not found"})
 
@@ -160,6 +176,8 @@ def main():
     server = HTTPServer(("127.0.0.1", args.port), Handler)
     print(f"\nListening on http://localhost:{args.port}")
     print("  GET  /ping")
+    print("  GET  /send_cc?cc=N&value=N[&channel=N]")
+    print("  GET  /send_pc?program=N[&channel=N]")
     print("  POST /pc  {{channel, bank_msb, bank_lsb, program}}")
     print("  POST /cc  {{channel, cc, value}}")
     print("\nCtrl+C to stop.\n")

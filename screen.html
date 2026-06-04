@@ -154,6 +154,22 @@
           </span>
         </label>
       </div>
+
+      <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(31,41,55,0.5);">
+        <p style="font-size: 0.75rem; font-weight: 600; color: #9ca3af; margin: 0 0 8px 0;">Signal Chain</p>
+        <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+          <input type="checkbox" id="at5-noise-gate-checkbox"
+            onchange="at5SetNoisegate(this.checked)"
+            style="margin-top: 3px; accent-color: #f97316; width: 14px; height: 14px; flex-shrink: 0;">
+          <span>
+            <span style="font-size: 0.875rem; color: #d1d5db; font-weight: 500;">Global Noise Gate</span><br>
+            <span style="font-size: 0.7rem; color: #6b7280; line-height: 1.5;">
+              Inserts a noise gate at pre-amp slot 0 in every converted tone.
+              Cuts hum and noise before the gain stage. Available in all AT5 versions.
+            </span>
+          </span>
+        </label>
+      </div>
     </div>
   </div>
 

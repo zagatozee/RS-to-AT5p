@@ -798,6 +798,8 @@ async function _at5LoadSettings() {
         if (radio) radio.checked = true;
         const cb = document.getElementById('at5-free-mode-checkbox');
         if (cb) cb.checked = (tier === 'cs');
+        const ngCb = document.getElementById('at5-noise-gate-checkbox');
+        if (ngCb) ngCb.checked = !!data.noise_gate;
     } catch(e) {}
     // Restore prefire slider from localStorage
     const prefireMs = Math.round(AT5_PREFIRE_MS * 1000);
@@ -805,6 +807,23 @@ async function _at5LoadSettings() {
     const label  = document.getElementById('at5-prefire-label');
     if (slider) slider.value = prefireMs;
     if (label)  label.textContent = `${prefireMs} ms`;
+}
+
+async function at5SetNoisegate(enabled) {
+    try {
+        const r = await fetch('/api/plugins/at5_tone/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ noise_gate: enabled }),
+        });
+        const data = await r.json();
+        console.log(`[AT5] Noise gate: ${data.noise_gate}`);
+        // Clear slots so next song re-converts with gate applied
+        Object.keys(_at5LiveSlots).forEach(k => delete _at5LiveSlots[k]);
+        _at5LiveLastFile = null;
+    } catch(e) {
+        console.warn('[AT5] Noise gate error:', e.message);
+    }
 }
 
 async function at5SetTier(tier) {
@@ -867,6 +886,7 @@ window._at5LoadSettings      = _at5LoadSettings;
 window.at5SetPrefire         = at5SetPrefire;
 window.at5SetFreeMode        = at5SetFreeMode;
 window.at5SetTier            = at5SetTier;
+window.at5SetNoisegate       = at5SetNoisegate;
 
 // Reset AT5 to PC 0 when song stops
 (function() {

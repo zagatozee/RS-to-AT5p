@@ -1355,6 +1355,10 @@ def _effect_to_cs_guid(rs_effect_key: str) -> str | None:
     return AT5_CS_NULL_EFFECT
 
 
+# Global noise gate — inserted at pre-amp slot 0 when enabled
+NOISE_GATE_GUID = "0455f997-43ca-4c9b-9269-286a19d10d48"
+NOISE_GATE_THRESHOLD = -50.0  # dB — sensible default for most guitars
+
 DI_AMP_KEYS = {
     "DI_Amp_TubePre",
     "DI_Amp_BassDriver",
@@ -1518,7 +1522,7 @@ def rs_knob_to_at5(rs_key, rs_value, amp_guid=""):
         at5_name = f"{at5_name}_{amp_suffix}"
     return at5_name, rs_value / 10.0
 
-def build_stomp_section(gear_slots, n_total=6, free_mode=False):
+def build_stomp_section(gear_slots, n_total=6, free_mode=False, noise_gate=False):
     """
     Build Stomp attrs and Slot elements for a StompX section.
     gear_slots: list of RS gear dicts (may be empty/None)
@@ -1526,10 +1530,20 @@ def build_stomp_section(gear_slots, n_total=6, free_mode=False):
     """
     guids = []
     slot_lines = []
+    # If global noise gate is on, prepend it and shift everything down
+    if noise_gate:
+        effective_slots = gear_slots[:n_total - 1]  # shift down, drop last if full
+        if len(gear_slots) >= n_total:
+            pass  # last slot dropped — log handled by caller
+        gate_slot = [{"Key": "__NOISE_GATE__"}]  # sentinel key
+        gear_slots = gate_slot + list(effective_slots)
     for i in range(n_total):
         slot_data = gear_slots[i] if i < len(gear_slots) else {}
         rs_key = slot_data.get('Key', '') if slot_data else ''
-        effect_guid = lookup_effect(rs_key, free_mode=free_mode) if rs_key else None
+        if rs_key == "__NOISE_GATE__":
+            effect_guid = NOISE_GATE_GUID
+        else:
+            effect_guid = lookup_effect(rs_key, free_mode=free_mode) if rs_key else None
 
         if effect_guid:
             guids.append(effect_guid)
@@ -1569,7 +1583,7 @@ def build_rack_section(rack_slots, free_mode=False):
 # MAIN CONVERSION
 # ─────────────────────────────────────────────────────────────────────────────
 
-def convert_tone(tone_path: Path, output_dir: Path, free_mode: bool = False, tier: str = "max"):
+def convert_tone(tone_path: Path, output_dir: Path, free_mode: bool = False, tier: str = "max", noise_gate: bool = False):
     try:
         tone = json.loads(tone_path.read_text(encoding='utf-8'))
     except Exception as e:
@@ -1628,7 +1642,7 @@ def convert_tone(tone_path: Path, output_dir: Path, free_mode: bool = False, tie
 
     # ── Pre-amp stomps (PrePedal1/2 -> StompA1 slots 0-1) ────────────────────
     pre_pedals = [gear.get('PrePedal1', {}), gear.get('PrePedal2', {})]
-    stompa1_attrs, stompa1_slots = build_stomp_section(pre_pedals, n_total=6, free_mode=free_mode)
+    stompa1_attrs, stompa1_slots = build_stomp_section(pre_pedals, n_total=6, free_mode=free_mode, noise_gate=noise_gate)
     for p in pre_pedals:
         k = p.get('Key', '') if p else ''
         if k and not lookup_effect(k):
@@ -1889,7 +1903,8 @@ def convert_tone_rs2014(tone_path: Path, output_dir: Path):
 def _convert_tone_from_gearlist(tone_key: str, tone_name: str, gear: dict,
                                  source_path: Path, output_dir: Path,
                                  free_mode: bool = False,
-                                 tier: str = "max") -> list:
+                                 tier: str = "max",
+                                 noise_gate: bool = False) -> list:
     """Shared assembly logic for both JSON and XML RS2014 paths."""
     warnings  = []
     out_paths = []
@@ -1937,7 +1952,7 @@ def _convert_tone_from_gearlist(tone_key: str, tone_name: str, gear: dict,
     # ── Pre-amp stomps (PrePedal1-4 -> StompA1 slots 0-3) ────────────────
     # RS2014 supports up to 4 pre/post pedals; RS+ only 2 — pass all 4.
     pre_pedals = [gear.get(f"PrePedal{i}", {}) for i in range(1, 5)]
-    stompa1_attrs, stompa1_slots = build_stomp_section(pre_pedals, n_total=6, free_mode=free_mode)
+    stompa1_attrs, stompa1_slots = build_stomp_section(pre_pedals, n_total=6, free_mode=free_mode, noise_gate=noise_gate)
     for p in pre_pedals:
         k = p.get("Key", "") if p else ""
         if k and not lookup_effect(k):
