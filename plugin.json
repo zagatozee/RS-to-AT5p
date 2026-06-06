@@ -1,10 +1,10 @@
 {
   "id": "at5_tone",
   "name": "AmpliTube 5 Tone Switcher",
-  "version": "0.4.0",
-  "private": false,
-  "nav": { "label": "AT5", "screen": "at5_tone" },
+  "version": "0.5.0",
+  "nav": { "label": "AT5", "screen": "plugin-at5_tone" },
   "screen": "screen.html",
   "script": "screen.js",
+  "settings": { "html": "settings.html" },
   "routes": "routes.py"
 }

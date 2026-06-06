@@ -1,3 +1,6 @@
+(function () {
+'use strict';
+
 // AmpliTube 5 Tone Switcher — v3
 // - setInterval + highway.getTime() (no setRenderer — doesn't interfere with visuals)
 // - Live tone log with per-song history
@@ -848,7 +851,7 @@ async function at5SetFreeMode(enabled) {
 }
 
 function at5ShowTab(tab) {
-    ['status', 'browser', 'log', 'settings'].forEach(t => {
+    ['status', 'browser', 'log'].forEach(t => {
         const tabEl = document.getElementById(`at5-tab-${t}`);
         const btnEl = document.getElementById(`at5-tabbtn-${t}`);
         if (tabEl) tabEl.style.display = (t === tab) ? '' : 'none';
@@ -859,7 +862,6 @@ function at5ShowTab(tab) {
     });
     if (tab === 'log') _at5RefreshLogUI();
     if (tab === 'status') _at5RenderStatus();
-    if (tab === 'settings') _at5LoadSettings();
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
@@ -913,5 +915,8 @@ window.at5SetNoisegate       = at5SetNoisegate;
 
 // Stub viz registration (harmless — prevents plugin manager warnings)
 window.slopsmithViz_at5tone = { init(){}, draw(){}, destroy(){} };
+
+})();
+
 
 })();

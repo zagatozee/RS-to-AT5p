@@ -322,11 +322,23 @@ _prescan_state = {}   # job_id -> progress dict
 _rs_to_at5_mod = None   # cached module reference
 
 
+_load_sibling_fn = None  # injected by setup() from context["load_sibling"]
+
+
 def _load_converter():
-    """Load rs_to_at5.py — tries plugin folder first, then /at5docs/."""
+    """Load rs_to_at5 — uses load_sibling if available, else importlib fallback."""
     global _rs_to_at5_mod
     if _rs_to_at5_mod is not None:
         return _rs_to_at5_mod
+    # Preferred: use Slopsmith's load_sibling for proper namespacing
+    if _load_sibling_fn is not None:
+        try:
+            _rs_to_at5_mod = _load_sibling_fn("rs_to_at5")
+            log.info("[AT5] Loaded rs_to_at5 via load_sibling")
+            return _rs_to_at5_mod
+        except Exception as e:
+            log.warning("[AT5] load_sibling failed, falling back: %s", e)
+    # Fallback: direct importlib (for standalone / legacy use)
     candidates = [
         Path(__file__).parent / "rs_to_at5.py",
         Path("/at5docs/rs_to_at5.py"),
@@ -337,11 +349,10 @@ def _load_converter():
             mod  = _ilu.module_from_spec(spec)
             spec.loader.exec_module(mod)
             _rs_to_at5_mod = mod
-            log.info(f"[AT5 Live] Loaded rs_to_at5 from {p}")
+            log.info("[AT5] Loaded rs_to_at5 from %s", p)
             return mod
     raise FileNotFoundError(
-        "rs_to_at5.py not found in plugin folder or /at5docs/. "
-        "Copy it to I:\\Docker\\slopsmith\\plugins\\at5_tone\\"
+        "rs_to_at5.py not found in plugin folder or /at5docs/."
     )
 
 
@@ -638,7 +649,11 @@ def _copy_song_presets_to_slots(song_presets: dict, slot_map_order: list,
 # ── Plugin setup ───────────────────────────────────────────────────────────
 
 def setup(app, context):
-    global _csv_path, _songs_path, _cache_path
+    global _csv_path, _songs_path, _cache_path, _load_sibling_fn, log
+    # Use Slopsmith's namespaced logger
+    log = context.get("log", log)
+    # Capture load_sibling for proper sibling module loading
+    _load_sibling_fn = context.get("load_sibling")
 
     at5_dir = context["config_dir"].parent   # IK Multimedia/AmpliTube 5
 
@@ -788,6 +803,7 @@ def setup(app, context):
         return {
             "tier":      _at5_tier,
             "free_mode": _at5_tier == "cs",  # legacy compat
+            "noise_gate": _at5_noise_gate,
         }
 
     @app.post("/api/plugins/at5_tone/settings")
