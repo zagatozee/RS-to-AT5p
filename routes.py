@@ -308,6 +308,9 @@ LIVE_SLOT_PREFIX = "AT5_LIVE"
 # AT5 version tier: "cs" | "se" | "at5" | "max"
 _at5_tier = "max"  # default: full library, no constraints
 _at5_free_mode = False  # legacy alias — True maps to tier="cs"
+_at5_noise_gate = False  # global pre-amp noise gate
+_bridge_cmd_queue: list = []  # pending MIDI commands for bridge window
+_bridge_cmd_seq: int   = 0
 
 _live_state = {
     "song":       None,
@@ -1313,3 +1316,392 @@ def _setup_cdlc_routes(app, context):
             matches[tone_key]["arrangements"] = tone_arrangements.get(tone_key, [])
 
         return {"matches": matches, "total": len(matches)}
+
+
+def _detect_at5_presets_path() -> str | None:
+    """Try multiple methods to find AT5 Presets folder."""
+    import winreg
+
+    # 1. Read from AT5 settings.properties — most reliable, contains actual path
+    appdata = Path(os.environ.get("APPDATA", ""))
+    settings_path = appdata / "IK Multimedia" / "AmpliTube 5" / "settings.properties"
+    if settings_path.exists():
+        import xml.etree.ElementTree as ET
+        try:
+            text = settings_path.read_text(encoding="utf-8", errors="replace")
+            root = ET.fromstring(text)
+            for val in root.findall(".//VALUE[@name='recentDocuments']"):
+                v = val.get("val", "")
+                for part in v.split("&#10;"):
+                    p = Path(part.strip()).parent
+                    while p != p.parent:
+                        if (p / "Presets").exists():
+                            return str(p / "Presets")
+                        p = p.parent
+        except Exception:
+            pass
+
+    # 2. Try registry
+    try:
+        for hive, key_path in [
+            (winreg.HKEY_CURRENT_USER,  r"Software\IK Multimedia\AmpliTube 5"),
+            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\IK Multimedia\AmpliTube 5"),
+            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\IK Multimedia\AmpliTube 5"),
+        ]:
+            try:
+                with winreg.OpenKey(hive, key_path) as k:
+                    for value_name in ("UserDataPath", "DocumentsPath", "InstallPath", "DataPath"):
+                        try:
+                            val, _ = winreg.QueryValueEx(k, value_name)
+                            p = Path(val) / "Presets"
+                            if p.exists():
+                                return str(p)
+                        except FileNotFoundError:
+                            continue
+            except FileNotFoundError:
+                continue
+    except Exception:
+        pass
+
+    # 3. Known path candidates
+    for candidate in [
+        Path.home() / "OneDrive" / "Documents" / "IK Multimedia" / "AmpliTube 5" / "Presets",
+        Path.home() / "Documents"              / "IK Multimedia" / "AmpliTube 5" / "Presets",
+        Path.home() / "OneDrive" / "Documenten"/ "IK Multimedia" / "AmpliTube 5" / "Presets",
+        Path.home() / "OneDrive" / "Documentos"/ "IK Multimedia" / "AmpliTube 5" / "Presets",
+    ]:
+        if candidate.exists():
+            return str(candidate)
+
+    return None
+
+
+    # ── Setup / first-run helpers ─────────────────────────────────────────
+
+    @app.get("/api/plugins/at5_tone/setup/status")
+    def _setup_status():
+        """Check what's present/missing for first-run setup."""
+        import platform
+        result = {
+            "platform": platform.system(),
+            "presets_linked": False,
+            "presets_path": None,
+            "live_slots_exist": False,
+            "live_slot_count": 0,
+            "at5_docs_found": False,
+        }
+
+        # Check AT5 docs / presets folder reachability
+        presets_candidates = [
+            (Path("/at5docs/Presets/Converted"),                                           "docker"),
+            (Path(__file__).parent.parent.parent / "Presets" / "Converted",               "desktop_symlink"),
+            (Path.home() / "AppData" / "Roaming" / "slopsmith-desktop" / "Presets" / "Converted", "desktop_symlink"),
+        ]
+        for p, mode in presets_candidates:
+            if p.exists():
+                result["presets_linked"] = True
+                result["presets_path"] = str(p)
+                result["at5_docs_found"] = True
+                result["mode"] = mode
+                slots = list(p.glob("AT5_LIVE_*.at5p"))
+                result["live_slots_exist"] = len(slots) >= 8
+                result["live_slot_count"] = len(slots)
+                break
+
+        # If nothing found, indicate which setup path applies
+        if not result["presets_linked"]:
+            result["mode"] = "docker" if Path("/at5docs").exists() else "desktop_symlink"
+            # Try to detect AT5 path anyway so UI can show it / suggest it
+            detected = _detect_at5_presets_path()
+            result["detected_at5_presets"] = detected
+
+        return result
+
+    @app.post("/api/plugins/at5_tone/setup/create-symlink")
+    async def _setup_create_symlink(request):
+        """Create symlink from Slopsmith Presets folder to AT5 Presets folder."""
+        import platform, subprocess, tempfile
+        if platform.system() != "Windows":
+            return {"ok": False, "error": "Symlink setup only needed on Windows Desktop"}
+
+        body = await request.json()
+        at5_presets = body.get("at5_presets_path", "")
+        slopsmith_presets = body.get("slopsmith_presets_path", "")
+
+        if not at5_presets or not slopsmith_presets:
+            at5_presets = _detect_at5_presets_path()
+            slopsmith_presets = str(Path.home() / "AppData" / "Roaming" / "slopsmith-desktop" / "Presets")
+
+        # Check target exists
+        if not Path(at5_presets).exists():
+            return {"ok": False, "error": f"AT5 Presets folder not found: {at5_presets}"}
+
+        # Remove existing folder if present (non-symlink)
+        sp = Path(slopsmith_presets)
+        if sp.exists() and not sp.is_symlink():
+            try:
+                import shutil
+                shutil.rmtree(str(sp))
+            except Exception as e:
+                return {"ok": False, "error": f"Could not remove existing Presets folder: {e}. Run Slopsmith as administrator."}
+
+        # Create symlink via PowerShell (handles elevation)
+        ps_cmd = (
+            f'New-Item -Path "{slopsmith_presets}" '
+            f'-ItemType SymbolicLink '
+            f'-Target "{at5_presets}" '
+            f'-Force'
+        )
+        try:
+            result = subprocess.run(
+                ["powershell", "-NoProfile", "-Command", ps_cmd],
+                capture_output=True, text=True, timeout=15
+            )
+            if result.returncode == 0 or Path(slopsmith_presets).is_symlink():
+                log.info(f"[AT5 Setup] Symlink created: {slopsmith_presets} → {at5_presets}")
+                return {"ok": True, "symlink": slopsmith_presets, "target": at5_presets}
+            else:
+                err = (result.stderr.strip() or result.stdout.strip() or "")
+                is_priv = "privilege" in err.lower() or "administrator" in err.lower() or "access" in err.lower()
+                if is_priv:
+                    return {
+                        "ok": False,
+                        "error": "Permission denied. Right-click Slopsmith Desktop and select 'Run as administrator', then try again.",
+                        "manual_cmd": f'New-Item -Path "{slopsmith_presets}" -ItemType SymbolicLink -Target "{at5_presets}" -Force',
+                    }
+                return {"ok": False, "error": err or "Unknown error creating symlink."}
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+
+    @app.post("/api/plugins/at5_tone/setup/run-pc-map")
+    async def _setup_run_pc_map(request):
+        """Run generate_at5_pc_map.py to populate AT5 live slots."""
+        import subprocess, sys
+        script = Path(__file__).parent / "generate_at5_pc_map.py"
+        if not script.exists():
+            return {"ok": False, "error": "generate_at5_pc_map.py not found in plugin folder"}
+        try:
+            result = subprocess.run(
+                [sys.executable, str(script)],
+                capture_output=True, text=True, timeout=60
+            )
+            ok = result.returncode == 0
+            output = (result.stdout + result.stderr).strip()
+            log.info(f"[AT5 Setup] pc_map result: {ok} — {output[:200]}")
+            return {"ok": ok, "output": output}
+        except subprocess.TimeoutExpired:
+            return {"ok": False, "error": "Timed out after 60s — check AT5 is installed"}
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+
+    @app.get("/api/plugins/at5_tone/bridge-window")
+    def _bridge_window():
+        """Serve the AT5 MIDI Bridge window — a self-contained page that
+        handles Web MIDI on the host browser and relays commands from Docker."""
+        from starlette.responses import HTMLResponse
+        html = """<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>AT5 MIDI Bridge</title>
+<style>
+  body { background: #0f172a; color: #94a3b8; font-family: monospace; font-size: 12px; margin: 0; padding: 12px; }
+  h2 { color: #f97316; font-size: 14px; margin: 0 0 8px 0; }
+  #status { margin-bottom: 8px; }
+  .ok  { color: #4ade80; }
+  .err { color: #f87171; }
+  .warn{ color: #eab308; }
+  #log { height: calc(100vh - 80px); overflow-y: auto; }
+  .entry { padding: 1px 0; border-bottom: 1px solid #1e293b; }
+  .ts { color: #475569; margin-right: 6px; }
+</style>
+</head>
+<body>
+<h2>⚡ AT5 MIDI Bridge</h2>
+<div id="status"><span class="warn">Initialising...</span></div>
+<div style="display:flex;gap:6px;margin-bottom:8px;">
+    <button onclick="copyLog()"
+        style="padding:3px 10px;background:#1e293b;border:1px solid #334155;border-radius:4px;color:#94a3b8;cursor:pointer;font-size:11px;">
+        📋 Copy Log
+    </button>
+    <button onclick="saveLog()"
+        style="padding:3px 10px;background:#1e293b;border:1px solid #334155;border-radius:4px;color:#94a3b8;cursor:pointer;font-size:11px;">
+        💾 Save Log
+    </button>
+    <button onclick="clearLog()"
+        style="padding:3px 10px;background:#1e293b;border:1px solid #334155;border-radius:4px;color:#6b7280;cursor:pointer;font-size:11px;">
+        🗑 Clear
+    </button>
+    <span id="copy-confirm" style="font-size:11px;color:#4ade80;display:none;line-height:2;">Copied!</span>
+</div>
+<div id="log"></div>
+<script>
+const POLL_URL = '/api/plugins/at5_tone/bridge-window/poll';
+const ACK_URL  = '/api/plugins/at5_tone/bridge-window/ack';
+let midiOut = null;
+let pollTimer = null;
+let lastSeq = 0;
+
+function ts() {
+    const d = new Date();
+    return d.toTimeString().slice(0,8) + '.' + String(d.getMilliseconds()).padStart(3,'0');
+}
+
+function log(msg, cls) {
+    const el = document.getElementById('log');
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = '<span class="ts">' + ts() + '</span><span class="' + (cls||'') + '">' + msg + '</span>';
+    el.insertBefore(div, el.firstChild);
+    if (el.children.length > 500) el.removeChild(el.lastChild);
+}
+
+function setStatus(msg, cls) {
+    document.getElementById('status').innerHTML = '<span class="' + (cls||'') + '">' + msg + '</span>';
+}
+
+async function initMidi() {
+    if (!navigator.requestMIDIAccess) {
+        setStatus('Web MIDI not supported in this browser', 'err');
+        return false;
+    }
+    try {
+        const access = await navigator.requestMIDIAccess({ sysex: false });
+        const outputs = [];
+        access.outputs.forEach(o => outputs.push(o));
+        if (!outputs.length) {
+            setStatus('No MIDI output ports found', 'warn');
+            log('No MIDI ports — connect a device or install loopMIDI', 'warn');
+            return false;
+        }
+        // Prefer port named "AT5 Bridge" or first available
+        midiOut = outputs.find(o => /bridge|at5/i.test(o.name)) || outputs[0];
+        setStatus('MIDI Ready → ' + midiOut.name + ' | Polling for commands...', 'ok');
+        log('Connected to: ' + midiOut.name, 'ok');
+        outputs.forEach(o => log('  Port: ' + o.name + ' [' + o.id + ']'));
+        access.onstatechange = e => {
+            log('Port state change: ' + e.port.name + ' = ' + e.port.state);
+        };
+        return true;
+    } catch(e) {
+        setStatus('MIDI access denied: ' + e.message, 'err');
+        return false;
+    }
+}
+
+async function poll() {
+    try {
+        const r = await fetch(POLL_URL + '?seq=' + lastSeq, { signal: AbortSignal.timeout(5000) });
+        if (!r.ok) { schedPoll(2000); return; }
+        const data = await r.json();
+        for (const cmd of (data.commands || [])) {
+            lastSeq = Math.max(lastSeq, cmd.seq);
+            await execCmd(cmd);
+        }
+    } catch(e) {
+        if (e.name !== 'AbortError') log('Poll error: ' + e.message, 'warn');
+    }
+    schedPoll(100);
+}
+
+function schedPoll(ms) {
+    clearTimeout(pollTimer);
+    pollTimer = setTimeout(poll, ms);
+}
+
+async function execCmd(cmd) {
+    if (!midiOut) { log('No MIDI output — command dropped', 'err'); return; }
+    try {
+        if (cmd.type === 'pc') {
+            const msg = [0xC0 | (cmd.channel & 0x0F), cmd.program & 0x7F];
+            midiOut.send(msg);
+            log('[PC] ch=' + cmd.channel + ' prog=' + cmd.program + ' → ' + midiOut.name + ' (' + (cmd.label||'') + ')', 'ok');
+        } else if (cmd.type === 'cc') {
+            const msg = [0xB0 | (cmd.channel & 0x0F), cmd.cc & 0x7F, cmd.value & 0x7F];
+            midiOut.send(msg);
+            log('[CC] ch=' + cmd.channel + ' cc=' + cmd.cc + ' val=' + cmd.value + ' → ' + midiOut.name, 'ok');
+        }
+        // Ack so the command isn't replayed
+        fetch(ACK_URL, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({seq: cmd.seq}) });
+    } catch(e) {
+        log('Send error: ' + e.message, 'err');
+    }
+}
+
+function getLogText() {
+    const entries = document.querySelectorAll('#log .entry');
+    return Array.from(entries).reverse().map(e => e.textContent).join('\n');
+}
+
+function copyLog() {
+    navigator.clipboard.writeText(getLogText()).then(() => {
+        const el = document.getElementById('copy-confirm');
+        el.style.display = 'inline';
+        setTimeout(() => { el.style.display = 'none'; }, 2000);
+    }).catch(e => log('Copy failed: ' + e.message, 'err'));
+}
+
+function saveLog() {
+    const text = getLogText();
+    const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'at5-bridge-log-' + ts + '.txt';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    log('Log saved: at5-bridge-log-' + ts + '.txt', 'ok');
+}
+
+function clearLog() {
+    document.getElementById('log').innerHTML = '';
+    log('Log cleared', 'warn');
+}
+
+(async () => {
+    const ok = await initMidi();
+    schedPoll(ok ? 100 : 3000);
+})();
+</script>
+</body>
+</html>"""
+        return HTMLResponse(html)
+
+    # Command queue for bridge window
+    _bridge_cmd_queue = []
+    _bridge_cmd_seq   = 0
+
+    @app.get("/api/plugins/at5_tone/bridge-window/poll")
+    async def _bridge_poll(seq: int = 0):
+        """Return pending MIDI commands for the bridge window."""
+        pending = [c for c in _bridge_cmd_queue if c["seq"] > seq]
+        return {"commands": pending}
+
+    @app.post("/api/plugins/at5_tone/bridge-window/ack")
+    async def _bridge_ack(request):
+        """Remove acknowledged commands from the queue."""
+        body = await request.json()
+        ack_seq = body.get("seq", 0)
+        _bridge_cmd_queue[:] = [c for c in _bridge_cmd_queue if c["seq"] > ack_seq]
+        return {"ok": True}
+
+    @app.post("/api/plugins/at5_tone/bridge-window/send")
+    async def _bridge_send(request):
+        """Receive MIDI command from screen.js and queue for bridge window."""
+        global _bridge_cmd_seq
+        data = await request.json()
+        _bridge_cmd_seq += 1
+        cmd = {"seq": _bridge_cmd_seq, "type": data.get("type", "pc")}
+        if cmd["type"] == "pc":
+            cmd.update(channel=int(data.get("channel", 0)),
+                       program=int(data.get("program", 0)),
+                       label=data.get("label", ""))
+        elif cmd["type"] == "cc":
+            cmd.update(channel=int(data.get("channel", 0)),
+                       cc=int(data.get("cc", 0)),
+                       value=int(data.get("value", 0)))
+        _bridge_cmd_queue.append(cmd)
+        if len(_bridge_cmd_queue) > 32:
+            _bridge_cmd_queue.pop(0)
+        return {"ok": True, "seq": _bridge_cmd_seq}
+

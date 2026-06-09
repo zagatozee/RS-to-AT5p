@@ -130,7 +130,7 @@ async function _at5Ping() {
 async function _at5SendPC(program, ccAdj) {
     const ch = AT5_MIDI_CH;
 
-    // 1. Internal VST (Desktop)
+    // 1. Internal VST (Desktop) — only if AT5 is loaded as a VST in the chain
     if (window.slopsmithDesktop?.audio) {
         try {
             const api = window.slopsmithDesktop.audio;
@@ -143,11 +143,47 @@ async function _at5SendPC(program, ccAdj) {
                 }
                 return;
             }
+            // No VST slots — AT5 is standalone, fall through to Web MIDI
         } catch {}
     }
 
-    // 2. Bridge
-    if (_at5BridgeOk || await _at5Ping()) {
+    // 2. Web MIDI — preferred if user has selected a port
+    if (_at5MidiOutput) {
+        _at5MidiOutput.send([0xC0|(ch&0x0F), program & 0x7F]);
+        if (ccAdj?.length) {
+            await new Promise(res => setTimeout(res, 50));
+            for (const { cc, value } of ccAdj) {
+                _at5MidiOutput.send([0xB0|(ch&0x0F), cc & 0x7F, value & 0x7F]);
+            }
+        }
+        return;
+    }
+
+    // 3. Bridge window (Docker) — push to queue for the host browser tab
+    const savedId = localStorage.getItem('at5_output_id');
+    if (savedId === 'bridge' || (!_at5MidiOutput && (_at5BridgeOk || await _at5Ping()))) {
+        // Try bridge window queue first (no Python bridge needed)
+        try {
+            await fetch('/api/plugins/at5_tone/bridge-window/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'pc', channel: ch, program }),
+                signal: AbortSignal.timeout(1000)
+            });
+            if (ccAdj?.length) {
+                await new Promise(res => setTimeout(res, 50));
+                for (const { cc, value } of ccAdj) {
+                    await fetch('/api/plugins/at5_tone/bridge-window/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: 'cc', channel: ch, cc, value }),
+                        signal: AbortSignal.timeout(500)
+                    });
+                }
+            }
+            return;
+        } catch {}
+        // Fallback: Python bridge script
         try {
             const r = await fetch(`${AT5_BRIDGE_URL}/pc`, {
                 method: 'POST',
@@ -169,9 +205,6 @@ async function _at5SendPC(program, ccAdj) {
             return;
         } catch { _at5BridgeOk = false; }
     }
-
-    // 3. Web MIDI
-    if (_at5MidiOutput) _at5MidiOutput.send([0xC0|(ch&0x0F), program & 0x7F]);
 }
 
 // ── MIDI init ──────────────────────────────────────────────────────────────
@@ -179,6 +212,14 @@ function _at5InitMidi() {
     if (!navigator.requestMIDIAccess) return;
     navigator.requestMIDIAccess({ sysex: false }).then(access => {
         _at5MidiAccess = access;
+        // If user had 'bridge' saved but real Web MIDI ports exist, clear it
+        // so they default to a real port rather than the Python bridge
+        const saved = localStorage.getItem('at5_output_id');
+        if (saved === 'bridge') {
+            const ports = [];
+            access.outputs.forEach(o => ports.push(o));
+            if (ports.length) localStorage.removeItem('at5_output_id');
+        }
         _at5PickOutput();
         access.onstatechange = _at5PickOutput;
     }).catch(() => {});
@@ -186,11 +227,12 @@ function _at5InitMidi() {
 
 function _at5PickOutput() {
     const saved = localStorage.getItem('at5_output_id');
-    if (!_at5MidiAccess || saved === 'internal' || saved === 'bridge') {
-        _at5MidiOutput = null; return;
-    }
+    if (!_at5MidiAccess) { _at5MidiOutput = null; return; }
     const outputs = [];
     _at5MidiAccess.outputs.forEach(o => outputs.push(o));
+    // 'internal' = VST slot (handled in _at5SendPC), 'bridge' = Python bridge
+    if (saved === 'internal' || saved === 'bridge') { _at5MidiOutput = null; return; }
+    // Otherwise find the saved port, or default to first available
     _at5MidiOutput = outputs.find(o => o.id === saved) || outputs[0] || null;
 }
 
@@ -523,45 +565,137 @@ function _at5UpdateBadge(toneKey, entry) {
 async function _at5RenderStatus() {
     const el = document.getElementById('at5-midi-status');
     if (!el) return;
-    const bridgeUp = await _at5Ping();
     const hasInternal = !!(window.slopsmithDesktop?.audio);
+    const hasDesktopMidi = hasInternal; // Desktop app has direct MIDI access
+    const bridgeUp = hasDesktopMidi ? false : await _at5Ping(); // skip bridge ping on desktop
     const pcCount = Object.keys(_at5PcTable).length;
     const savedId = localStorage.getItem('at5_output_id');
     const outputs = [];
     if (_at5MidiAccess) _at5MidiAccess.outputs.forEach(o => outputs.push(o));
+
+    const hasAnyMidi = hasInternal || outputs.length || bridgeUp;
 
     const card = 'background:rgba(55,65,81,0.3);border:1px solid rgba(31,41,55,0.5);border-radius:12px;padding:14px;margin-bottom:10px;';
     const row  = 'display:flex;align-items:center;gap:8px;margin-bottom:6px;';
     const dot  = (col) => `<span style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0;display:inline-block;"></span>`;
     let html = '';
 
-    // ── Bridge status + output selector ──────────────────────────────────
-    html += `<div style="${card}">`;
-    html += `<div style="${row}">
-        ${dot(bridgeUp ? '#4ade80' : '#eab308')}
-        <span style="font-size:0.75rem;font-weight:600;color:${bridgeUp ? '#4ade80' : '#eab308'};">
-            ${bridgeUp ? 'Bridge Ready' : 'Bridge Offline'}
-        </span>
-        <span style="font-size:0.7rem;color:#4b5563;">
-            ${bridgeUp ? 'MIDI bridge connected · auto tone switching active' : 'Start at5_midi_bridge.py on Windows host'}
-        </span>
-    </div>`;
+    // ── Docker bridge window banner ───────────────────────────────────────
+    const isDockerMode = !hasInternal && !outputs.length && !bridgeUp;
+    if (isDockerMode && _at5ShouldShowBridgeBanner()) {
+        html += `<div id="at5-bridge-banner"
+            style="background:linear-gradient(135deg,rgba(249,115,22,0.15),rgba(249,115,22,0.05));
+                   border:1px solid rgba(249,115,22,0.4);border-radius:12px;
+                   padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
+            <span style="font-size:1.2rem;">⚡</span>
+            <div style="flex:1;">
+                <div style="font-size:0.8rem;font-weight:600;color:#f97316;margin-bottom:2px;">
+                    Open the AT5 MIDI Bridge window
+                </div>
+                <div style="font-size:0.7rem;color:#9ca3af;line-height:1.5;">
+                    Docker mode detected. Open this once and leave it running in the background —
+                    it handles MIDI directly from your browser, no extra software needed.
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+                <button onclick="_at5OpenBridgeWindow()"
+                    style="padding:6px 16px;background:#f97316;border:none;border-radius:8px;
+                           color:#000;font-weight:700;font-size:0.8rem;cursor:pointer;white-space:nowrap;">
+                    Open Bridge ↗
+                </button>
+                <button onclick="_at5DismissBridgeBanner()"
+                    style="padding:4px 10px;background:transparent;border:1px solid #374151;
+                           border-radius:6px;color:#6b7280;font-size:0.7rem;cursor:pointer;">
+                    Dismiss
+                </button>
+            </div>
+        </div>`;
+    }
 
-    if (hasInternal || outputs.length || bridgeUp) {
+    // ── MIDI status + output selector ─────────────────────────────────────
+    html += `<div style="${card}">`;
+
+    if (hasDesktopMidi) {
+        // Desktop app — direct MIDI, no bridge needed
+        html += `<div style="${row}">
+            ${dot('#4ade80')}
+            <span style="font-size:0.75rem;font-weight:600;color:#4ade80;">MIDI Ready</span>
+            <span style="font-size:0.7rem;color:#4b5563;">Desktop app · direct MIDI output · no bridge needed</span>
+        </div>`;
+    } else if (outputs.length && !bridgeUp) {
+        // Web MIDI available, no bridge — loopMIDI or similar
+        html += `<div style="${row}">
+            ${dot('#4ade80')}
+            <span style="font-size:0.75rem;font-weight:600;color:#4ade80;">MIDI Ready</span>
+            <span style="font-size:0.7rem;color:#4b5563;">Web MIDI · ${outputs.length} port${outputs.length>1?'s':''} available</span>
+        </div>`;
+    } else if (bridgeUp) {
+        // Docker + bridge running
+        html += `<div style="${row}">
+            ${dot('#4ade80')}
+            <span style="font-size:0.75rem;font-weight:600;color:#4ade80;">Bridge Ready</span>
+            <span style="font-size:0.7rem;color:#4b5563;">Docker mode · at5_midi_bridge.py connected</span>
+        </div>`;
+    } else {
+        // Nothing available — show contextual setup help
+        html += `<div style="${row}">
+            ${dot('#eab308')}
+            <span style="font-size:0.75rem;font-weight:600;color:#eab308;">No MIDI output</span>
+        </div>
+        <div style="font-size:0.7rem;color:#6b7280;line-height:1.6;margin-bottom:8px;">
+            <strong style="color:#9ca3af;">Desktop app?</strong>
+            Select your audio interface or a virtual port from the dropdown below.<br>
+            No virtual port? Install
+            <a href="https://www.tobias-erichsen.de/software/loopmidi.html" target="_blank"
+               style="color:#f97316;">loopMIDI</a>,
+            create a port, set AT5 MIDI Input to match, then select it here.<br>
+            <strong style="color:#9ca3af;">Docker?</strong>
+            Open the AT5 MIDI Bridge page in your browser — it handles MIDI directly
+            from the host without needing any extra software:<br>
+            <a href="/api/plugins/at5_tone/bridge-window" target="_blank"
+               style="color:#f97316;font-weight:600;">Open AT5 MIDI Bridge window ↗</a>
+            <span style="color:#4b5563;font-size:0.65rem;"> (leave this tab open in the background)</span>
+        </div>`;
+    }
+
+    if (hasAnyMidi) {
         html += `<div style="${row}">
             <span style="font-size:0.7rem;color:#6b7280;flex-shrink:0;">MIDI output</span>
             <select id="at5-device-select" onchange="localStorage.setItem('at5_output_id',this.value);_at5PickOutput()"
                 style="background:#1f2937;border:1px solid #374151;border-radius:6px;padding:3px 8px;font-size:0.75rem;color:#d1d5db;flex:1;">`;
         if (hasInternal) html += `<option value="internal" ${savedId==='internal'?'selected':''}>Internal VST (Desktop)</option>`;
-        if (bridgeUp)    html += `<option value="bridge" ${savedId==='bridge'||(!hasInternal&&!savedId)?'selected':''}>Bridge → AT5 (Docker)</option>`;
+        // Only offer bridge option if no Web MIDI ports and not on desktop
+        if (bridgeUp && !hasInternal && !outputs.length) html += `<option value="bridge" ${savedId==='bridge'?'selected':''}>Bridge → AT5 (Docker)</option>`;
         for (const o of outputs) html += `<option value="${o.id}" ${savedId===o.id?'selected':''}>${esc(o.name)}</option>`;
         html += `</select>
             <button onclick="_at5TestMidi()" style="font-size:0.7rem;padding:3px 10px;background:transparent;border:1px solid #374151;border-radius:6px;color:#9ca3af;cursor:pointer;" title="Send PC 0 to verify MIDI is reaching AT5">Test</button>
-        </div>`;
+            <button onclick="_at5DiagMidi()" style="font-size:0.7rem;padding:3px 10px;background:transparent;border:1px solid #374151;border-radius:6px;color:#6b7280;cursor:pointer;" title="Show MIDI diagnostic info">Diag</button>
+        </div>
+        <pre id="at5-midi-diag" style="display:none;font-size:0.65rem;color:#9ca3af;background:#111827;border-radius:6px;padding:8px;margin-top:6px;white-space:pre-wrap;line-height:1.5;"></pre>`;
+
+        // Contextual hint below the dropdown
+        const sel = savedId || (hasInternal ? 'internal' : (bridgeUp ? 'bridge' : (outputs[0]?.id || '')));
+        if (hasInternal) {
+            html += `<div style="font-size:0.65rem;color:#4b5563;margin-top:2px;">
+                Desktop app: Internal VST sends MIDI directly — no cable or bridge needed.
+            </div>`;
+        } else if (bridgeUp) {
+            html += `<div style="font-size:0.65rem;color:#4b5563;margin-top:2px;">
+                Docker: MIDI routed via bridge → AXE IO OUT → cable → AXE IO IN → AT5.
+            </div>`;
+        } else if (outputs.length) {
+            const portName = outputs.find(o => o.id === savedId)?.name || outputs[0]?.name || '';
+            const isLoopMidi = /bridge|loop|virtual/i.test(portName);
+            html += `<div style="font-size:0.65rem;color:#4b5563;margin-top:2px;">
+                ${isLoopMidi
+                    ? 'Virtual MIDI port — no cable needed. Ensure AT5 MIDI Input matches this port name.'
+                    : 'Hardware port — ensure AT5 MIDI Input is set to match and MIDI cable is connected.'}
+            </div>`;
+        }
     }
 
     // Manual PC send
-    html += `<div style="${row};margin-top:4px;">
+    html += `<div style="${row};margin-top:8px;">
         <span style="font-size:0.7rem;color:#6b7280;flex-shrink:0;">Send PC</span>
         <input type="number" id="at5-test-prog" min="0" max="127" value="0"
             style="width:54px;background:#1f2937;border:1px solid #374151;border-radius:6px;padding:3px 6px;font-size:0.75rem;color:#d1d5db;text-align:center;">
@@ -570,6 +704,79 @@ async function _at5RenderStatus() {
         <span style="font-size:0.7rem;color:#4b5563;">AT5 preset # = PC + 1</span>
     </div>`;
     html += `</div>`;
+
+    // ── First-run setup panel ────────────────────────────────────────────
+    const setup = await _at5CheckSetup();
+    if (setup && (!setup.presets_linked || !setup.live_slots_exist)) {
+        html += `<div style="${card}">`;
+        html += `<div style="font-size:0.75rem;font-weight:600;color:#f97316;margin-bottom:10px;">⚙ First-time Setup</div>`;
+
+        // Step 1 — Presets folder
+        if (!setup.presets_linked) {
+            const isDocker = setup.mode === 'docker';
+            html += `<div style="${row};margin-bottom:8px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:#f87171;flex-shrink:0;display:inline-block;"></span>
+                <span style="font-size:0.75rem;color:#d1d5db;flex:1;">Presets folder not linked to AmpliTube 5</span>
+                ${isDocker
+                    ? `<span style="font-size:0.7rem;color:#6b7280;">Add <code style="color:#d1d5db;">/at5docs</code> volume mount to docker-compose.yml</span>`
+                    : `<button id="at5-setup-symlink-btn" onclick="_at5DoSymlink()"
+                        style="font-size:0.7rem;padding:4px 12px;background:#f97316;border:none;border-radius:6px;color:#000;cursor:pointer;font-weight:600;">
+                        Create Symlink
+                       </button>`
+                }
+            </div>
+            ${isDocker
+                ? `<div style="font-size:0.65rem;color:#4b5563;margin-left:16px;margin-bottom:6px;">
+                       Add to docker-compose.yml volumes:<br>
+                       <code style="color:#9ca3af;">"C:/Users/&lt;username&gt;/Documents/IK Multimedia/AmpliTube 5:/at5docs"</code>
+                   </div>`
+                : `<div style="margin-left:16px;margin-bottom:6px;">
+                       ${setup.detected_at5_presets
+                           ? `<div style="font-size:0.65rem;color:#6b7280;margin-bottom:4px;">
+                                  Detected AT5 Presets: <code style="color:#9ca3af;">${setup.detected_at5_presets}</code>
+                              </div>`
+                           : `<div style="font-size:0.65rem;color:#f87171;margin-bottom:4px;">
+                                  Could not detect AT5 Presets folder. Enter path manually:
+                              </div>
+                              <input id="at5-presets-path-input" type="text" placeholder="C:\Users\...\IK Multimedia\AmpliTube 5\Presets"
+                                  style="width:100%;background:#1f2937;border:1px solid #374151;border-radius:6px;padding:4px 8px;font-size:0.7rem;color:#d1d5db;box-sizing:border-box;margin-bottom:4px;">`
+                       }
+                       <div id="at5-setup-symlink-msg" style="font-size:0.65rem;color:#6b7280;"></div>
+                   </div>`
+            }`;
+        } else {
+            html += `<div style="${row};margin-bottom:4px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;display:inline-block;"></span>
+                <span style="font-size:0.75rem;color:#6b7280;">Presets folder linked ✓</span>
+            </div>`;
+        }
+
+        // Step 2 — Live slots
+        if (setup.presets_linked && !setup.live_slots_exist) {
+            html += `<div style="${row};margin-bottom:8px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:#f87171;flex-shrink:0;display:inline-block;"></span>
+                <span style="font-size:0.75rem;color:#d1d5db;flex:1;">
+                    Live slots not populated
+                    ${setup.live_slot_count > 0 ? `(${setup.live_slot_count}/8 found)` : '(0 found)'}
+                </span>
+                <button id="at5-setup-pcmap-btn" onclick="_at5DoPcMap()"
+                    style="font-size:0.7rem;padding:4px 12px;background:#f97316;border:none;border-radius:6px;color:#000;cursor:pointer;font-weight:600;">
+                    Run Setup
+                </button>
+            </div>
+            <div id="at5-setup-pcmap-msg" style="font-size:0.65rem;color:#6b7280;margin-left:16px;margin-bottom:6px;"></div>
+            <div style="font-size:0.65rem;color:#4b5563;margin-left:16px;">
+                Restart AmpliTube 5 after running to pick up the new PC map.
+            </div>`;
+        } else if (setup.presets_linked) {
+            html += `<div style="${row};margin-bottom:4px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;display:inline-block;"></span>
+                <span style="font-size:0.75rem;color:#6b7280;">${setup.live_slot_count} live slots ready ✓</span>
+            </div>`;
+        }
+
+        html += `</div>`;
+    }
 
     // ── PC table status ───────────────────────────────────────────────────
     html += `<div style="font-size:0.7rem;color:${pcCount>0?'#6b7280':'#ca8a04'};margin-bottom:8px;">
@@ -619,6 +826,98 @@ async function _at5RenderStatus() {
     }
 
     el.innerHTML = html;
+}
+
+function _at5ShouldShowBridgeBanner() {
+    // Show once for Docker users with no MIDI output, until they click it
+    return !localStorage.getItem('at5_bridge_banner_dismissed');
+}
+
+function _at5DismissBridgeBanner() {
+    localStorage.setItem('at5_bridge_banner_dismissed', '1');
+    const el = document.getElementById('at5-bridge-banner');
+    if (el) el.style.display = 'none';
+}
+
+function _at5OpenBridgeWindow() {
+    window.open('/api/plugins/at5_tone/bridge-window', 'at5_bridge',
+        'width=600,height=500,menubar=no,toolbar=no,location=no,status=no');
+    _at5DismissBridgeBanner();
+}
+
+async function _at5CheckSetup() {
+    try {
+        const r = await fetch('/api/plugins/at5_tone/setup/status');
+        if (!r.ok) return null;
+        return await r.json();
+    } catch { return null; }
+}
+
+async function _at5DoSymlink() {
+    const btn = document.getElementById('at5-setup-symlink-btn');
+    const msg = document.getElementById('at5-setup-symlink-msg');
+    if (btn) { btn.disabled = true; btn.textContent = 'Working...'; }
+    // Include manual path override if user entered one
+    const pathInput = document.getElementById('at5-presets-path-input');
+    const body = pathInput?.value ? JSON.stringify({ at5_presets_path: pathInput.value }) : '{}';
+    try {
+        const r = await fetch('/api/plugins/at5_tone/setup/create-symlink', { method: 'POST', headers: {'Content-Type':'application/json'}, body });
+        const d = await r.json();
+        if (msg) {
+            msg.style.color = d.ok ? '#4ade80' : '#f87171';
+            if (d.ok) {
+                msg.textContent = '✓ Symlink created — restart Slopsmith to apply';
+            } else if (d.manual_cmd) {
+                msg.innerHTML = '✗ ' + d.error +
+                    '<br><span style="color:#9ca3af;">Or run this in PowerShell as admin:</span>' +
+                    '<br><code style="color:#d1d5db;font-size:0.6rem;word-break:break-all;">' + d.manual_cmd + '</code>';
+            } else {
+                msg.textContent = '✗ ' + d.error;
+            }
+        }
+        if (d.ok) setTimeout(() => _at5RenderStatus(), 1500);
+    } catch(e) {
+        if (msg) { msg.style.color = '#f87171'; msg.textContent = '✗ ' + e.message; }
+    }
+    if (btn) { btn.disabled = false; btn.textContent = 'Create Symlink'; }
+}
+
+async function _at5DoPcMap() {
+    const btn = document.getElementById('at5-setup-pcmap-btn');
+    const msg = document.getElementById('at5-setup-pcmap-msg');
+    if (btn) { btn.disabled = true; btn.textContent = 'Running...'; }
+    try {
+        const r = await fetch('/api/plugins/at5_tone/setup/run-pc-map', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+        const d = await r.json();
+        if (msg) {
+            msg.style.color = d.ok ? '#4ade80' : '#f87171';
+            msg.textContent = d.ok ? '✓ Live slots populated' : '✗ ' + d.error;
+        }
+        if (d.ok) setTimeout(() => _at5RenderStatus(), 1500);
+    } catch(e) {
+        if (msg) { msg.style.color = '#f87171'; msg.textContent = '✗ ' + e.message; }
+    }
+    if (btn) { btn.disabled = false; btn.textContent = 'Run Setup'; }
+}
+
+async function _at5DiagMidi() {
+    const el = document.getElementById('at5-midi-diag');
+    if (!el) return;
+    const savedId = localStorage.getItem('at5_output_id');
+    const lines = [`Saved output_id: ${savedId || '(none)'}`];
+    lines.push(`_at5MidiOutput: ${window._at5MidiOutput ? window._at5MidiOutput.name + ' [' + window._at5MidiOutput.id + ']' : 'null'}`);
+    lines.push(`_at5BridgeOk: ${window._at5BridgeOk}`);
+    lines.push(`slopsmithDesktop.audio: ${!!(window.slopsmithDesktop?.audio)}`);
+    if (_at5MidiAccess) {
+        const ports = [];
+        _at5MidiAccess.outputs.forEach(o => ports.push(`  ${o.id} — ${o.name} [${o.state}]`));
+        lines.push(`Web MIDI outputs (${ports.length}):`);
+        ports.forEach(p => lines.push(p));
+    } else {
+        lines.push('Web MIDI: not initialised');
+    }
+    el.textContent = lines.join('\n');
+    el.style.display = '';
 }
 
 async function _at5TestMidi() {
@@ -677,28 +976,37 @@ async function at5BrowseSong(filename, title, artist) {
     let tones = [];
 
     if (isCdlc) {
-        // Use match-cdlc-tones endpoint — extracts tones directly from PSARC
+        // Use bundled midi_amp plugin's song-tones endpoint (always available)
+        // Returns {tones: [{key, name, arrangement}]} — simpler and maintained by core
         try {
-            const r = await fetch(`/api/plugins/at5_tone/match-cdlc-tones/${encodeURIComponent(decoded)}?skip_scrape=true`, {
+            const r = await fetch(`/api/plugins/midi_amp/song-tones/${encodeURIComponent(decoded)}`, {
                 signal: AbortSignal.timeout(10000),
             });
             if (r.ok) {
                 const d = await r.json();
-                if (d.matches && Object.keys(d.matches).length) {
-                    // Convert matches dict to tones array format
-                    tones = Object.entries(d.matches).map(([key, m]) => ({
-                        key,
-                        startTime: null,
-                        pc: m.pc,
-                        preset_name: m.preset || '',
-                        match_type: m.match_type || 'unknown',
-                        in_top128: m.match_type === 'exact',
-                        cc_adjustments: m.cc_adjustments || [],
-                        arrangements: m.arrangements || [],
-                    }));
+                if (d.tones && d.tones.length) {
+                    // Enrich each tone with AT5 PC table lookup
+                    tones = d.tones.map(t => {
+                        const entry = _at5Lookup(t.key);
+                        const livePC = _at5LiveSlots[t.key];
+                        return {
+                            key: t.key,
+                            startTime: null,
+                            pc: livePC !== undefined ? livePC : entry?.pc,
+                            preset_name: entry?.preset_name || '',
+                            match_type: livePC !== undefined ? 'live'
+                                      : entry ? (entry.in_top128 ? 'exact' : 'adjusted')
+                                      : 'unmapped',
+                            in_top128: entry?.in_top128 || false,
+                            cc_adjustments: entry?.cc_adjustments || [],
+                            arrangements: t.arrangement ? [t.arrangement] : [],
+                        };
+                    });
                 }
             }
-        } catch(e) {}
+        } catch(e) {
+            // midi_amp endpoint failed — fall through to scrape schedule fallback
+        }
     }
 
     // Fallback: RS+ scrape schedule (for loose folder / sloppak songs)
@@ -884,6 +1192,11 @@ window._at5LiveSlots     = _at5LiveSlots;
 window._at5RequestLiveConvert = _at5RequestLiveConvert;
 window._at5SaveBack          = _at5SaveBack;
 window._at5TestMidi          = _at5TestMidi;
+window._at5DiagMidi          = _at5DiagMidi;
+window._at5DoSymlink         = _at5DoSymlink;
+window._at5OpenBridgeWindow  = _at5OpenBridgeWindow;
+window._at5DismissBridgeBanner = _at5DismissBridgeBanner;
+window._at5DoPcMap           = _at5DoPcMap;
 window._at5LoadSettings      = _at5LoadSettings;
 window.at5SetPrefire         = at5SetPrefire;
 window.at5SetFreeMode        = at5SetFreeMode;
