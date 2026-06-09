@@ -189,3 +189,70 @@ This is a Slopsmith core behaviour affecting all plugins. Use the Live Log tab t
 Every CDLC PSARC contains the guitar tone settings used in Rocksmith — amp model, cabinet, pedals, all knob positions. When you load a song, the plugin reads those settings and converts them to AT5 preset files using a mapping of Rocksmith gear to AT5 equivalents. It writes the presets to 8 reserved PC slots (120–127) and sends MIDI Program Change messages at the correct timestamps during playback.
 
 The first load converts and seeds presets beside the song file in a tier-specific subfolder. Every subsequent load copies them directly. If you edit a preset in AT5 and save it back, your version loads from then on.
+
+
+
+## Testing checklist
+
+If you're validating a fresh install, work through these in order:
+
+### Desktop app
+
+- [ ] Plugin appears in Plugins menu after install
+- [ ] Status tab shows setup panel with "Presets folder not linked"
+- [ ] "Create Symlink" button succeeds (may require running Slopsmith as administrator)
+- [ ] "Run Setup" button completes and reports 8 live slots created
+- [ ] AT5 restarted after Run Setup — presets appear in Program Change list (PC 121–128)
+- [ ] AT5 MIDI Input set to your interface or loopMIDI port, Program Change enabled
+- [ ] MIDI output dropdown in Status tab shows your port — correct hint text shown below
+- [ ] Test button fires PC 0 — AT5 switches to first preset
+- [ ] Load a CDLC song — Live Slots section populates within ~1 second
+- [ ] Play the song — AT5 switches presets at tone change events
+- [ ] Tone Browser — search returns results, ▶ button fires correct preset
+- [ ] Settings → noise gate checkbox — enable, reload song, open resulting .at5p in
+      text editor and confirm GUID 0455f997 at StompA1 slot 0
+- [ ] Save-back — edit tone in AT5, click 💾, reload song, confirm edits persist
+
+### Docker
+
+- [ ] Plugin appears after container restart
+- [ ] Status tab shows orange "Open AT5 MIDI Bridge window" banner
+- [ ] Clicking "Open Bridge ↗" opens bridge window popup
+- [ ] Bridge window shows "MIDI Ready → [port name]" in green
+- [ ] Banner dismissed — does not reappear on refresh
+- [ ] Load a CDLC song — Live Slots populates
+- [ ] Play song — bridge window log shows PC entries firing, AT5 switches
+- [ ] Copy Log button — content appears in clipboard
+- [ ] Save Log button — .txt file downloads with correct timestamp
+
+### Both
+
+- [ ] Diag button in Status tab shows correct _at5MidiOutput name and port ID
+- [ ] Settings page (via Slopsmith nav Settings) shows AT5 section with tier
+      selector, noise gate checkbox, MIDI offset slider
+- [ ] Switching tier clears live slots, next song load re-converts
+- [ ] Live Log tab captures every tone switch with timestamp
+
+---
+
+## Known issues / not yet tested
+
+- **Docker bridge window latency** — 100ms polling may add jitter on top of the
+  prefire offset. If tone switches feel late, increase the MIDI Trigger Offset
+  slider in Settings. WebSocket upgrade planned for a future release.
+
+- **AT5 as VST** — MIDI signalling confirmed working via sendMidiToSlot. Guitar
+  audio routing through Slopsmith Desktop's chain not yet fully validated.
+  Use standalone AT5 for now.
+
+- **Browser tab suspension** — if the bridge window tab is backgrounded for a
+  long time in a non-Electron browser, Chrome may throttle polling. Keep the
+  window visible or use the Python bridge as fallback.
+
+- **Non-standard AT5 install paths** — if AT5 documents are not in Documents or
+  OneDrive/Documents, the path detection may fail. Use the manual path input
+  field that appears in the setup panel.
+
+- **Symlink requires admin** — Windows requires elevated privileges to create
+  symbolic links. If the button fails, run Slopsmith Desktop as administrator
+  or use the manual PowerShell command shown in the error message.
